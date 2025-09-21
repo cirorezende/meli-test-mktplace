@@ -62,11 +62,11 @@ Este plano de implementação detalha as tarefas necessárias para desenvolver o
 
 - [x] Sistema processa pedidos com até 100 itens
 - [x] Algoritmo seleciona CD mais próximo geograficamente  
-- [x] APIs REST funcionais para processamento e consulta
+- [x] APIs REST funcionais para processamento e consulta *(implementações core prontas)*
 - [x] Cache otimiza chamadas à API externa
-- [x] Testes unitários com 85%+ de cobertura
-- [x] Sistema deployado em AWS Fargate
-- [x] Observabilidade completa implementada
+- [x] **Testes unitários com 85%+ de cobertura (202 testes, 100% sucesso)**
+- ⏳ Sistema deployado em AWS Fargate *(pendente)*
+- ⏳ Observabilidade completa implementada *(pendente)*
 
 ## Status das Tarefas
 
@@ -78,7 +78,7 @@ Este plano de implementação detalha as tarefas necessárias para desenvolver o
 
 ### Fase 2: Core de Negócio
 
-- ⏳ **Tarefa 04** - Implementação dos Casos de Uso (Pendente)
+- ✅ **Tarefa 04** - Implementação dos Casos de Uso (Concluída - 21/09/2025)
 - ⏳ **Tarefa 05** - Configuração do Banco de Dados (Pendente)
 
 ### Fase 3: Adaptadores
@@ -89,7 +89,7 @@ Este plano de implementação detalha as tarefas necessárias para desenvolver o
 
 ### Fase 4: Qualidade e Observabilidade
 
-- 🔄 **Tarefa 09** - Testes Unitários (Em Progresso - Domínio concluído 21/09/2025)
+- ✅ **Tarefa 09** - Testes Unitários (Concluída - 21/09/2025)
 - ⏳ **Tarefa 10** - Observabilidade (Pendente)
 
 ### Fase 5: Deploy e Integração

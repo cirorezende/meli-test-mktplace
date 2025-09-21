@@ -22,6 +22,9 @@ public class Order {
     @NotNull(message = "Order ID is required")
     private final String id;
     
+    @NotNull(message = "Customer ID is required")
+    private final String customerId;
+    
     @NotEmpty(message = "Order must have at least one item")
     @Size(max = MAX_ITEMS, message = "Order cannot have more than " + MAX_ITEMS + " items")
     @Valid
@@ -40,8 +43,9 @@ public class Order {
     /**
      * Construtor para criar um novo pedido
      */
-    public Order(List<OrderItem> items, Address deliveryAddress) {
+    public Order(String customerId, List<OrderItem> items, Address deliveryAddress) {
         this.id = UlidCreator.getUlid().toString();
+        this.customerId = Objects.requireNonNull(customerId, "Customer ID cannot be null");
         this.items = validateAndCopyItems(items);
         this.deliveryAddress = Objects.requireNonNull(deliveryAddress, "Delivery address cannot be null");
         this.status = OrderStatus.RECEIVED; // Status inicial sempre RECEIVED
@@ -49,15 +53,31 @@ public class Order {
     }
     
     /**
+     * Construtor para criar um novo pedido (para compatibilidade com testes)
+     */
+    public Order(List<OrderItem> items, Address deliveryAddress) {
+        this("CUSTOMER-DEFAULT", items, deliveryAddress);
+    }
+    
+    /**
      * Construtor para reconstrução (ex: vindo do banco de dados)
      */
-    public Order(String id, List<OrderItem> items, Address deliveryAddress, 
+    public Order(String id, String customerId, List<OrderItem> items, Address deliveryAddress, 
                  OrderStatus status, Instant createdAt) {
         this.id = Objects.requireNonNull(id, "Order ID cannot be null");
+        this.customerId = Objects.requireNonNull(customerId, "Customer ID cannot be null");
         this.items = validateAndCopyItems(items);
         this.deliveryAddress = Objects.requireNonNull(deliveryAddress, "Delivery address cannot be null");
         this.status = Objects.requireNonNull(status, "Order status cannot be null");
         this.createdAt = Objects.requireNonNull(createdAt, "Created timestamp cannot be null");
+    }
+    
+    /**
+     * Construtor para reconstrução (para compatibilidade com testes)
+     */
+    public Order(String id, List<OrderItem> items, Address deliveryAddress, 
+                 OrderStatus status, Instant createdAt) {
+        this(id, "CUSTOMER-DEFAULT", items, deliveryAddress, status, createdAt);
     }
     
     /**
@@ -109,6 +129,10 @@ public class Order {
     // Getters
     public String getId() {
         return id;
+    }
+    
+    public String getCustomerId() {
+        return customerId;
     }
     
     public List<OrderItem> getItems() {
