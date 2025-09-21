@@ -21,6 +21,12 @@ O sistema de processamento de pedidos do e-commerce otimiza a alocação de iten
 - Persistência relacional (PostgreSQL + PostGIS)
 - APIs RESTful, sem frontend
 
+## Principais assunções
+
+- Apesar de a API de consulta de CDs não informar a localização de cada CD, assume-se que os seus endereços (e por consequencia suas coordenadas geoespaciais) são conhecidos pelo time de desenvolvimento (e até publicamente).
+
+- A API de CDs por item é chamada unitariamente, não sendo possível fazer batch de chamadas. Assume-se que a partir do momento em que recebemos um retorno da API sobre quais CDs possuem determinado produto, este produto continuará disponível pelo menos até o fim do dia. Desta forma poderemos salvar as informações em cache para evitar requisições repetidas à API de CDs. Tal cache será limpo ao final do dia.
+
 ## Atributos de qualidade priorizados
 
 Escalabilidade > Disponibilidade > Performance > Manutenibilidade
