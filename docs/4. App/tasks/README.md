@@ -73,7 +73,7 @@ Este plano de implementação detalha as tarefas necessárias para desenvolver o
 ### Fase 1: Fundação
 
 - ✅ **Tarefa 01** - Setup Inicial do Projeto (Concluída - 21/09/2025)
-- ⏳ **Tarefa 02** - Modelagem do Domínio (Pendente)
+- ✅ **Tarefa 02** - Modelagem do Domínio (Concluída - 21/09/2025)
 - ⏳ **Tarefa 03** - Definição das Portas (Pendente)
 
 ### Fase 2: Core de Negócio

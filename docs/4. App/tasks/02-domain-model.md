@@ -10,13 +10,34 @@ Criar as classes de domínio seguindo os princípios de Domain-Driven Design, ma
 
 ## Critérios de Aceitação
 
-- [ ] Entidade Order com identificador ULID
-- [ ] Entidade OrderItem com referência ao produto
-- [ ] Value Object Address para endereço de entrega
-- [ ] Value Object DistributionCenter com coordenadas geográficas
-- [ ] Enum OrderStatus para controle de estados
-- [ ] Validações de negócio implementadas nas entidades
-- [ ] Máximo de 100 itens por pedido validado
+- [x] Entidade Order com identificador ULID
+- [x] Entidade OrderItem com referência ao produto
+- [x] Value Object Address para endereço de entrega
+- [x] Value Object DistributionCenter com coordenadas geográficas
+- [x] Enum OrderStatus para controle de estados
+- [x] Validações de negócio implementadas nas entidades
+- [x] Máximo de 100 itens por pedido validado
+
+## Status: ✅ CONCLUÍDA
+
+**Data de Conclusão**: 21/09/2025
+
+### Implementações Realizadas
+
+1. **OrderStatus (Enum)**: Estados RECEIVED, PROCESSING, PROCESSED, FAILED
+2. **Address (Value Object)**: Record com street, city, state, country, zipCode e coordenadas geográficas com validações
+3. **DistributionCenter (Value Object)**: Record com code, name e address, incluindo método para obter coordenadas
+4. **OrderItem (Entidade)**: Classe com itemId, quantity e assignedDistributionCenter, com validações de negócio
+5. **Order (Entidade Principal)**: Classe com ULID, items, deliveryAddress, status e createdAt, incluindo:
+   - Geração automática de ULID para identificação
+   - Validação de máximo 100 itens por pedido
+   - Status inicial sempre RECEIVED
+   - Métodos de negócio para verificação de estados
+   - Validações completas com Bean Validation
+
+### Dependências Adicionadas
+
+- **ULID Creator**: Biblioteca para geração de ULIDs conforme ADR-008
 
 ## Entidades e Value Objects
 
