@@ -10,12 +10,40 @@ Criar as interfaces que representam as portas de entrada e saída da Arquitetura
 
 ## Critérios de Aceitação
 
-- [ ] Interface OrderRepository para persistência de pedidos
-- [ ] Interface DistributionCenterService para consulta de CDs por item
-- [ ] Interface CacheService para operações de cache
-- [ ] Interface EventPublisher para publicação de eventos
-- [ ] Interface IDGenerator para geração de identificadores
-- [ ] Todas as interfaces no pacote domain.port
+- [x] Interface OrderRepository para persistência de pedidos
+- [x] Interface DistributionCenterService para consulta de CDs por item
+- [x] Interface CacheService para operações de cache
+- [x] Interface EventPublisher para publicação de eventos
+- [x] Interface IDGenerator para geração de identificadores
+- [x] Todas as interfaces no pacote domain.port
+
+## Status: ✅ CONCLUÍDA
+
+**Data de Conclusão**: 21/09/2025
+
+### Implementações Realizadas
+
+**Outbound Ports (Portas de Saída)**:
+- **OrderRepository**: Interface completa para persistência com métodos save, find, exists
+- **DistributionCenterService**: Interface para consulta de CDs via API externa
+- **CacheService**: Interface genérica para operações de cache distribuído
+- **EventPublisher**: Interface para publicação de eventos de domínio
+- **IDGenerator**: Interface para geração de identificadores únicos (ULID)
+
+**Inbound Ports (Portas de Entrada)**:
+- **CreateOrderUseCase**: Interface para criação de pedidos com DTOs
+- **ProcessOrderUseCase**: Interface para processamento com algoritmo de roteamento
+- **QueryOrderUseCase**: Interface completa para consultas e buscas com paginação
+
+**Exceções de Domínio**:
+- **OrderNotFoundException**: Para pedidos não encontrados
+- **ExternalServiceException**: Para falhas em serviços externos
+- **ProcessOrderException**: Para falhas no processamento
+
+**Documentação**:
+- README completo no pacote domain.port com todos os contratos
+- JavaDoc detalhado em todas as interfaces
+- DTOs com validações integradas (records)
 
 ## Portas de Saída (Outbound Ports)
 

@@ -74,7 +74,7 @@ Este plano de implementação detalha as tarefas necessárias para desenvolver o
 
 - ✅ **Tarefa 01** - Setup Inicial do Projeto (Concluída - 21/09/2025)
 - ✅ **Tarefa 02** - Modelagem do Domínio (Concluída - 21/09/2025)
-- ⏳ **Tarefa 03** - Definição das Portas (Pendente)
+- ✅ **Tarefa 03** - Definição das Portas (Concluída - 21/09/2025)
 
 ### Fase 2: Core de Negócio
 
@@ -89,7 +89,7 @@ Este plano de implementação detalha as tarefas necessárias para desenvolver o
 
 ### Fase 4: Qualidade e Observabilidade
 
-- ⏳ **Tarefa 09** - Testes Unitários (Pendente)
+- 🔄 **Tarefa 09** - Testes Unitários (Em Progresso - Domínio concluído 21/09/2025)
 - ⏳ **Tarefa 10** - Observabilidade (Pendente)
 
 ### Fase 5: Deploy e Integração
