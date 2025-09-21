@@ -79,7 +79,7 @@ Este plano de implementação detalha as tarefas necessárias para desenvolver o
 ### Fase 2: Core de Negócio
 
 - ✅ **Tarefa 04** - Implementação dos Casos de Uso (Concluída - 21/09/2025)
-- ⏳ **Tarefa 05** - Configuração do Banco de Dados (Pendente)
+- ✅ **Tarefa 05** - Configuração do Banco de Dados (Concluída - 21/09/2025)
 
 ### Fase 3: Adaptadores
 
