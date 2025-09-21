@@ -62,9 +62,11 @@ Este plano de implementação detalha as tarefas necessárias para desenvolver o
 
 - [x] Sistema processa pedidos com até 100 itens
 - [x] Algoritmo seleciona CD mais próximo geograficamente  
-- [x] APIs REST funcionais para processamento e consulta *(implementações core prontas)*
-- [x] Cache otimiza chamadas à API externa
+- [x] **Core de negócio implementado** *(implementações cases de uso prontas)*
+- [x] **Database configurado** *(PostgreSQL + PostGIS + Flyway)*
+- [x] Cache otimiza chamadas à API externa *(interfaces definidas)*
 - [x] **Testes unitários com 85%+ de cobertura (202 testes, 100% sucesso)**
+- ⏳ APIs REST funcionais para processamento e consulta *(pendente - adaptadores)*
 - ⏳ Sistema deployado em AWS Fargate *(pendente)*
 - ⏳ Observabilidade completa implementada *(pendente)*
 
@@ -105,6 +107,22 @@ Após completar todas as tarefas, o sistema estará pronto para:
 - Evolução incremental dos algoritmos
 - Migração para configurações mais sofisticadas
 - Expansão para microserviços se necessário
+
+## 📊 Resumo do Progresso
+
+**Tarefas Concluídas: 6/12 (50%)**
+
+✅ **Fase 1 - Fundação**: 100% concluída (3/3 tarefas)
+✅ **Fase 2 - Core de Negócio**: 100% concluída (2/2 tarefas)  
+⏳ **Fase 3 - Adaptadores**: 0% concluída (0/3 tarefas)
+✅ **Fase 4 - Qualidade**: 50% concluída (1/2 tarefas)
+⏳ **Fase 5 - Deploy**: 0% concluída (0/2 tarefas)
+
+### Estado Atual
+- **Core de Domínio**: ✅ Completo (entidades, portas, casos de uso)
+- **Database**: ✅ Configurado (PostgreSQL + PostGIS + migrations)
+- **Testes**: ✅ Implementados (202 testes unitários, 100% sucesso)
+- **Adaptadores**: ⏳ Próxima fase (repositórios, controllers, cache)
 
 ## ADRs de Referência
 
