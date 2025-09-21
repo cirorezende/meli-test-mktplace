@@ -8,15 +8,17 @@ Implementar os controllers REST que expõem as APIs do sistema para processament
 
 Criar os controllers REST seguindo as melhores práticas de API design, com validação de entrada, tratamento de erros e documentação adequada.
 
+## Status: ✅ CONCLUÍDA (21/09/2025)
+
 ## Critérios de Aceitação
 
-- [ ] OrderController com endpoints de processamento e consulta
-- [ ] DTOs para request/response
-- [ ] Validação de entrada com Bean Validation
-- [ ] Tratamento global de exceções
-- [ ] Documentação OpenAPI/Swagger
-- [ ] Versionamento de API (v1)
-- [ ] Headers de resposta apropriados
+- [x] OrderController com endpoints de processamento e consulta
+- [x] DTOs para request/response
+- [x] Validação de entrada com Bean Validation
+- [x] Tratamento global de exceções
+- [x] Documentação OpenAPI/Swagger
+- [x] Versionamento de API (v1)
+- [x] Headers de resposta apropriados
 
 ## Endpoints da API
 

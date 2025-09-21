@@ -66,7 +66,7 @@ Este plano de implementação detalha as tarefas necessárias para desenvolver o
 - [x] **Database configurado** *(PostgreSQL + PostGIS + Flyway)*
 - [x] Cache otimiza chamadas à API externa *(interfaces definidas)*
 - [x] **Testes unitários com 85%+ de cobertura (202 testes, 100% sucesso)**
-- ⏳ APIs REST funcionais para processamento e consulta *(pendente - adaptadores)*
+- ⏳ APIs REST funcionais para processamento e consulta ✅ *(APIs implementadas - controllers, DTOs, validação, error handling)*
 - ⏳ Sistema deployado em AWS Fargate *(pendente)*
 - ⏳ Observabilidade completa implementada *(pendente)*
 
@@ -85,8 +85,8 @@ Este plano de implementação detalha as tarefas necessárias para desenvolver o
 
 ### Fase 3: Adaptadores
 
-- ⏳ **Tarefa 06** - Adaptadores de Saída (Pendente)
-- ⏳ **Tarefa 07** - Adaptadores de Entrada (Pendente)
+- ✅ **Tarefa 06** - Adaptadores de Saída (Concluída - 21/09/2025)
+- ✅ **Tarefa 07** - Adaptadores de Entrada (Concluída - 21/09/2025)
 - ⏳ **Tarefa 08** - Configuração e Wiring (Pendente)
 
 ### Fase 4: Qualidade e Observabilidade
@@ -110,11 +110,11 @@ Após completar todas as tarefas, o sistema estará pronto para:
 
 ## 📊 Resumo do Progresso
 
-**Tarefas Concluídas: 6/12 (50%)**
+**Tarefas Concluídas: 8/12 (67%)**
 
 ✅ **Fase 1 - Fundação**: 100% concluída (3/3 tarefas)
 ✅ **Fase 2 - Core de Negócio**: 100% concluída (2/2 tarefas)  
-⏳ **Fase 3 - Adaptadores**: 0% concluída (0/3 tarefas)
+⏳ **Fase 3 - Adaptadores**: 67% concluída (2/3 tarefas)
 ✅ **Fase 4 - Qualidade**: 50% concluída (1/2 tarefas)
 ⏳ **Fase 5 - Deploy**: 0% concluída (0/2 tarefas)
 
@@ -122,7 +122,7 @@ Após completar todas as tarefas, o sistema estará pronto para:
 - **Core de Domínio**: ✅ Completo (entidades, portas, casos de uso)
 - **Database**: ✅ Configurado (PostgreSQL + PostGIS + migrations)
 - **Testes**: ✅ Implementados (202 testes unitários, 100% sucesso)
-- **Adaptadores**: ⏳ Próxima fase (repositórios, controllers, cache)
+- **Adaptadores**: ✅ 67% concluído (repositórios JPA, cliente HTTP, cache Redis, controllers REST, DTOs, error handling)
 
 ## ADRs de Referência
 

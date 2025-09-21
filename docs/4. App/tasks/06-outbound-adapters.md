@@ -8,15 +8,17 @@ Implementar os adaptadores que conectam o core de negócio com sistemas externos
 
 Criar as implementações concretas das portas de saída, incluindo repositórios JPA, cliente HTTP para API de CDs, cache Redis e gerador ULID.
 
+## Status: ✅ CONCLUÍDA (21/09/2025)
+
 ## Critérios de Aceitação
 
-- [ ] JpaOrderRepository implementando OrderRepository
-- [ ] HttpDistributionCenterService para API externa
-- [ ] RedisCache implementando CacheService
-- [ ] UlidGeneratorImpl para geração de IDs
-- [ ] KafkaEventPublisher para publicação de eventos
-- [ ] Configuração de retry e circuit breaker
-- [ ] Mapeamento entre entidades JPA e domínio
+- [x] JpaOrderRepository implementando OrderRepository
+- [x] HttpDistributionCenterService para API externa
+- [x] RedisCache implementando CacheService
+- [x] UlidGeneratorImpl para geração de IDs
+- [x] KafkaEventPublisher para publicação de eventos
+- [x] Configuração de retry e circuit breaker
+- [x] Mapeamento entre entidades JPA e domínio
 
 ## Adaptadores a Implementar
 
