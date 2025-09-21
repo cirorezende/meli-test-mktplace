@@ -1,12 +1,15 @@
 # Tarefa 05 - Configuração do Banco de Dados
 
 ## Objetivo
+
 Configurar PostgreSQL com extensão PostGIS para persistência de dados e cálculos geoespaciais.
 
 ## Descrição
+
 Criar as tabelas, índices e configurações necessárias para armazenar pedidos e realizar cálculos de proximidade geográfica.
 
 ## Critérios de Aceitação
+
 - [ ] Scripts de migração Flyway configurados
 - [ ] Tabela orders com campos principais
 - [ ] Tabela order_items com relacionamento
@@ -18,6 +21,7 @@ Criar as tabelas, índices e configurações necessárias para armazenar pedidos
 ## Estrutura das Tabelas
 
 ### orders
+
 - id (VARCHAR) - ULID
 - delivery_address (JSONB)
 - delivery_coordinates (GEOMETRY POINT)
@@ -26,6 +30,7 @@ Criar as tabelas, índices e configurações necessárias para armazenar pedidos
 - updated_at (TIMESTAMP)
 
 ### order_items
+
 - id (BIGSERIAL)
 - order_id (VARCHAR) - FK
 - item_id (VARCHAR)
@@ -33,6 +38,7 @@ Criar as tabelas, índices e configurações necessárias para armazenar pedidos
 - assigned_distribution_center (VARCHAR)
 
 ### distribution_centers
+
 - code (VARCHAR) - PK
 - name (VARCHAR)
 - address (JSONB)
@@ -40,11 +46,13 @@ Criar as tabelas, índices e configurações necessárias para armazenar pedidos
 - active (BOOLEAN)
 
 ## Índices Geoespaciais
+
 - Índice GIST em orders.delivery_coordinates
 - Índice GIST em distribution_centers.coordinates
 - Índices B-tree em chaves estrangeiras
 
 ## ADRs Relacionados
+
 - ADR-001: PostgreSQL com PostGIS
 - ADR-004: Armazenamento de decisões logísticas
 - ADR-008: ULID para identificadores

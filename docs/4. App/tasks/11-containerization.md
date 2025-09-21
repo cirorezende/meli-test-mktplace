@@ -1,12 +1,15 @@
 # Tarefa 11 - Containerização e Deploy
 
 ## Objetivo
+
 Preparar a aplicação para execução em contêineres AWS Fargate conforme definido no ADR-006.
 
 ## Descrição
+
 Criar Dockerfile otimizado, configurações de deploy e scripts necessários para execução da aplicação em ambiente containerizado na AWS.
 
 ## Critérios de Aceitação
+
 - [ ] Dockerfile multi-stage otimizado
 - [ ] docker-compose para desenvolvimento local
 - [ ] Scripts de build e deploy
@@ -18,18 +21,21 @@ Criar Dockerfile otimizado, configurações de deploy e scripts necessários par
 ## Dockerfile Multi-stage
 
 ### Stage 1: Build
+
 - Base image: openjdk:21-jdk-slim
 - Maven build com cache de dependências
 - Compilação da aplicação
 - Execução de testes unitários
 
 ### Stage 2: Runtime
+
 - Base image: openjdk:21-jre-slim
 - Cópia apenas do JAR final
 - Usuário não-root para segurança
 - Health check configurado
 
 ## docker-compose.yml (Desenvolvimento)
+
 ```yaml
 services:
   orders-app:
@@ -58,6 +64,7 @@ services:
 ```
 
 ## Variáveis de Ambiente
+
 - `SPRING_PROFILES_ACTIVE` - Profile ativo
 - `DB_HOST` - Host do PostgreSQL
 - `DB_PASSWORD` - Senha do banco
@@ -68,16 +75,19 @@ services:
 ## Scripts de Deploy
 
 ### build.sh
+
 - Build da imagem Docker
 - Tag com versão
 - Push para ECR (Amazon Container Registry)
 
 ### deploy.sh
+
 - Deploy no AWS Fargate
 - Configuração de task definition
 - Service update com rolling deployment
 
 ## Configuração AWS Fargate
+
 - Task definition com recursos apropriados
 - Service com load balancer
 - Auto scaling configurado
@@ -85,17 +95,20 @@ services:
 - Secrets via AWS Secrets Manager
 
 ## Health Checks
+
 - Endpoint: `/actuator/health`
 - Interval: 30 segundos
 - Timeout: 5 segundos
 - Retries: 3
 
 ## Otimizações
+
 - Imagem base slim
 - Layers cacheable
 - .dockerignore configurado
 - JVM tuning para containers
 
 ## ADRs Relacionados
+
 - ADR-006: AWS Fargate
 - ADR-016: Configuração via properties/env vars
