@@ -8,15 +8,17 @@ Configurar a injeção de dependências e wiring entre portas e adaptadores, est
 
 Criar as classes de configuração Spring que conectam os adaptadores às portas, configurar beans e estabelecer a estrutura de dependências da Arquitetura Hexagonal.
 
+## Status: ✅ CONCLUÍDA (21/09/2025)
+
 ## Critérios de Aceitação
 
-- [ ] ApplicationConfig com wiring de use cases
-- [ ] DatabaseConfig para configuração JPA/PostGIS
-- [ ] CacheConfig para configuração Redis
-- [ ] HttpClientConfig para cliente da API de CDs
-- [ ] KafkaConfig para publicação de eventos
-- [ ] Profiles de configuração (dev, staging, prod)
-- [ ] Properties externalizadas por ambiente
+- [x] ApplicationConfig com wiring de use cases
+- [x] DatabaseConfig para configuração JPA/PostGIS
+- [x] CacheConfig para configuração Redis
+- [x] HttpClientConfig para cliente da API de CDs
+- [x] KafkaConfig para publicação de eventos
+- [x] Profiles de configuração (dev, staging, prod)
+- [x] Properties externalizadas por ambiente
 
 ## Classes de Configuração
 
