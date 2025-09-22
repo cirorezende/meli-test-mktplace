@@ -1,0 +1,85 @@
+# Git
+.git/
+.gitignore
+.gitattributes
+
+# Docker
+Dockerfile*
+docker-compose*
+.dockerignore
+
+# Maven
+target/
+!target/*.jar
+.mvn/wrapper/maven-wrapper.jar
+
+# IDE
+.vscode/
+.idea/
+*.iml
+*.ipr
+*.iws
+.settings/
+.project
+.classpath
+.metadata/
+
+# OS
+.DS_Store
+Thumbs.db
+*.log
+
+# Logs
+logs/
+*.log
+*.log.*
+
+# Documentation
+docs/
+*.md
+!README.md
+
+# Docker volumes
+**/data/
+**/logs/
+
+# Node.js (if any)
+node_modules/
+npm-debug.log*
+
+# Temporary files
+*.tmp
+*.temp
+*.swp
+*.swo
+*~
+
+# Build artifacts
+build/
+dist/
+
+# Spring Boot
+*.pid
+*.pid.*
+
+# Test results
+TEST-*.xml
+
+# Coverage reports
+coverage/
+.nyc_output/
+
+# Local environment
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
+
+# Cache
+.cache/

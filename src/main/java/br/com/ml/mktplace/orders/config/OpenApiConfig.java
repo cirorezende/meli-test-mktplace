@@ -27,25 +27,25 @@ public class OpenApiConfig {
     public OpenAPI customOpenAPI() {
         return new OpenAPI()
                 .info(new Info()
-                        .title("MercadoLibre Orders API")
+                        .title("ml Orders API")
                         .description("API para processamento e consulta de pedidos do marketplace")
                         .version(apiVersion)
                         .contact(new Contact()
-                                .name("MercadoLibre Engineering")
-                                .email("engineering@mercadolibre.com")
-                                .url("https://developers.mercadolibre.com"))
+                                .name("ml Engineering")
+                                .email("engineering@ml.com")
+                                .url("https://developers.ml.com"))
                         .license(new License()
                                 .name("Proprietary")
-                                .url("https://www.mercadolibre.com/terms")))
+                                .url("https://www.ml.com/terms")))
                 .servers(List.of(
                         new Server()
                                 .url("http://localhost:8080" + contextPath)
                                 .description("Development server"),
                         new Server()
-                                .url("https://api-staging.mercadolibre.com" + contextPath)
+                                .url("https://api-staging.ml.com" + contextPath)
                                 .description("Staging server"),
                         new Server()
-                                .url("https://api.mercadolibre.com" + contextPath)
+                                .url("https://api.ml.com" + contextPath)
                                 .description("Production server")
                 ));
     }

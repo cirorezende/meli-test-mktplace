@@ -131,7 +131,7 @@ public class DatabaseConfig {
      */
     private void configureJpaProperties(Properties jpaProperties) {
         // Configurações básicas Hibernate
-        jpaProperties.setProperty("hibernate.dialect", "org.hibernate.spatial.dialect.postgis.PostgisPG10Dialect");
+        jpaProperties.setProperty("hibernate.dialect", "org.hibernate.dialect.PostgreSQLDialect");
         jpaProperties.setProperty("hibernate.hbm2ddl.auto", "validate");
         jpaProperties.setProperty("hibernate.show_sql", "false");
         jpaProperties.setProperty("hibernate.format_sql", "false");
