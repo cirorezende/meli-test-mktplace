@@ -68,8 +68,9 @@ Este plano de implementação detalha as tarefas necessárias para desenvolver o
 - [x] **Testes unitários com 85%+ de cobertura (251 testes, 97% sucesso)**
 - [x] **APIs REST funcionais para processamento e consulta** *(Controllers, DTOs, validação, error handling)*
 - [x] **Configuração completa por ambiente** *(ApplicationConfig, DatabaseConfig, CacheConfig, HttpClientConfig, KafkaConfig)*
-- ⏳ Sistema deployado em AWS Fargate *(pendente)*
+- [x] **Sistema conteinerizado e funcional** *(Docker + docker-compose com 8 serviços)*
 - ⏳ Observabilidade completa implementada *(pendente)*
+- ⏳ Testes de integração com mocks *(pendente)*
 
 ## Status das Tarefas
 
@@ -97,7 +98,7 @@ Este plano de implementação detalha as tarefas necessárias para desenvolver o
 
 ### Fase 5: Deploy e Integração
 
-- ⏳ **Tarefa 11** - Containerização (Pendente)
+- ✅ **Tarefa 11** - Containerização (Concluída - 21/09/2025)
 - ⏳ **Tarefa 12** - Testes de Integração (Pendente)
 
 ## Próximos Passos
@@ -111,13 +112,13 @@ Após completar todas as tarefas, o sistema estará pronto para:
 
 ## 📊 Resumo do Progresso
 
-**Tarefas Concluídas: 9/12 (75%)**
+**Tarefas Concluídas: 10/12 (83%)**
 
 ✅ **Fase 1 - Fundação**: 100% concluída (3/3 tarefas)
 ✅ **Fase 2 - Core de Negócio**: 100% concluída (2/2 tarefas)  
 ✅ **Fase 3 - Adaptadores**: 100% concluída (3/3 tarefas)
 ✅ **Fase 4 - Qualidade**: 50% concluída (1/2 tarefas)
-⏳ **Fase 5 - Deploy**: 0% concluída (0/2 tarefas)
+✅ **Fase 5 - Deploy**: 50% concluída (1/2 tarefas)
 
 ### Estado Atual
 - **Core de Domínio**: ✅ Completo (entidades, portas, casos de uso)
@@ -125,6 +126,7 @@ Após completar todas as tarefas, o sistema estará pronto para:
 - **Testes**: ✅ Implementados (251 testes unitários, 97% sucesso - 244 passando)
 - **Adaptadores**: ✅ Completo (repositórios JPA, cliente HTTP, cache Redis, controllers REST, DTOs, error handling)
 - **Configurações**: ✅ Completo (Application, Database, Cache, HttpClient, Kafka + 47 testes de configuração)
+- **Containerização**: ✅ Completo (Docker multi-stage, docker-compose com 8 serviços, ambiente de desenvolvimento completo)
 
 ## ADRs de Referência
 
