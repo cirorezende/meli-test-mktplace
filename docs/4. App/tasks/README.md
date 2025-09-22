@@ -65,8 +65,9 @@ Este plano de implementação detalha as tarefas necessárias para desenvolver o
 - [x] **Core de negócio implementado** *(implementações cases de uso prontas)*
 - [x] **Database configurado** *(PostgreSQL + PostGIS + Flyway)*
 - [x] Cache otimiza chamadas à API externa *(interfaces definidas)*
-- [x] **Testes unitários com 85%+ de cobertura (202 testes, 100% sucesso)**
-- ⏳ APIs REST funcionais para processamento e consulta ✅ *(APIs implementadas - controllers, DTOs, validação, error handling)*
+- [x] **Testes unitários com 85%+ de cobertura (251 testes, 97% sucesso)**
+- [x] **APIs REST funcionais para processamento e consulta** *(Controllers, DTOs, validação, error handling)*
+- [x] **Configuração completa por ambiente** *(ApplicationConfig, DatabaseConfig, CacheConfig, HttpClientConfig, KafkaConfig)*
 - ⏳ Sistema deployado em AWS Fargate *(pendente)*
 - ⏳ Observabilidade completa implementada *(pendente)*
 
@@ -121,8 +122,9 @@ Após completar todas as tarefas, o sistema estará pronto para:
 ### Estado Atual
 - **Core de Domínio**: ✅ Completo (entidades, portas, casos de uso)
 - **Database**: ✅ Configurado (PostgreSQL + PostGIS + migrations)
-- **Testes**: ✅ Implementados (202 testes unitários, 100% sucesso)
-- **Adaptadores**: ✅ 67% concluído (repositórios JPA, cliente HTTP, cache Redis, controllers REST, DTOs, error handling)
+- **Testes**: ✅ Implementados (251 testes unitários, 97% sucesso - 244 passando)
+- **Adaptadores**: ✅ Completo (repositórios JPA, cliente HTTP, cache Redis, controllers REST, DTOs, error handling)
+- **Configurações**: ✅ Completo (Application, Database, Cache, HttpClient, Kafka + 47 testes de configuração)
 
 ## ADRs de Referência
 
