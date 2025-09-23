@@ -4,9 +4,7 @@ import br.com.ml.mktplace.orders.adapter.inbound.rest.dto.OrderRequest;
 import br.com.ml.mktplace.orders.adapter.inbound.rest.dto.OrderItemDto;
 import br.com.ml.mktplace.orders.adapter.inbound.rest.dto.AddressDto;
 import br.com.ml.mktplace.orders.adapter.inbound.rest.dto.OrderResponse;
-import com.github.tomakehurst.wiremock.WireMockServer;
-import com.github.tomakehurst.wiremock.client.WireMock;
-import com.github.tomakehurst.wiremock.core.WireMockConfiguration;
+import br.com.ml.mktplace.orders.integration.support.SharedWireMock;
 import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.web.client.TestRestTemplate;
@@ -27,22 +25,14 @@ import static org.assertj.core.api.Assertions.assertThat;
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class OrderFlowIT extends BaseIntegrationTest {
 
-    private static WireMockServer wireMockServer;
-
     @Autowired
     private TestRestTemplate restTemplate;
 
     @BeforeAll
-    static void startWireMock() {
-        wireMockServer = new WireMockServer(WireMockConfiguration.options().port(9999));
-        wireMockServer.start();
-        WireMock.configureFor("localhost", 9999);
-    }
+    static void startWireMock() { SharedWireMock.startIfNeeded(); }
 
     @AfterAll
-    static void stopWireMock() {
-        if (wireMockServer != null) wireMockServer.stop();
-    }
+    static void stopWireMock() { }
 
     @BeforeEach
     void setupStubs() {
@@ -79,15 +69,17 @@ public class OrderFlowIT extends BaseIntegrationTest {
 
         HttpEntity<OrderRequest> entity = new HttpEntity<>(request, headers);
 
-        ResponseEntity<OrderResponse> createResponse = restTemplate.postForEntity("/api/v1/orders", entity, OrderResponse.class);
-        assertThat(createResponse.getStatusCode()).isEqualTo(HttpStatus.CREATED);
-        assertThat(createResponse.getBody()).isNotNull();
-        String orderId = createResponse.getBody().getId();
+    ResponseEntity<OrderResponse> createResponse = restTemplate.postForEntity("/api/v1/orders", entity, OrderResponse.class);
+    assertThat(createResponse.getStatusCode()).isEqualTo(HttpStatus.ACCEPTED);
+    OrderResponse createdBody = createResponse.getBody();
+    assertThat(createdBody).isNotNull();
+    String orderId = createdBody != null ? createdBody.getId() : null;
         assertThat(orderId).isNotBlank();
 
-        ResponseEntity<OrderResponse> getResponse = restTemplate.getForEntity("/api/v1/orders/" + orderId, OrderResponse.class);
-        assertThat(getResponse.getStatusCode()).isEqualTo(HttpStatus.OK);
-        assertThat(getResponse.getBody()).isNotNull();
-        assertThat(getResponse.getBody().getId()).isEqualTo(orderId);
+    ResponseEntity<OrderResponse> getResponse = restTemplate.getForEntity("/api/v1/orders/" + orderId, OrderResponse.class);
+    assertThat(getResponse.getStatusCode()).isEqualTo(HttpStatus.OK);
+    OrderResponse fetched = getResponse.getBody();
+    assertThat(fetched).isNotNull();
+    assertThat(fetched != null ? fetched.getId() : null).isEqualTo(orderId);
     }
 }

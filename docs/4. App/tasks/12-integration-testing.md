@@ -6,7 +6,10 @@ Incrementos concluídos até agora:
 
 1. Fluxo end-to-end criação + recuperação de pedido
 2. Validação de cache (hit na primeira chamada, miss na segunda) – WireMock verificado
-3. Publicação inicial de eventos (pipeline executa sem falhas; validação de consumo futura)
+3. Publicação inicial de eventos
+4. Publicação real em Kafka + teste de consumo manual (`OrderEventConsumptionIT`)
+5. Listener Kafka implementado (`OrderEventsListener`) consumindo `ORDER_CREATED` e disparando processamento
+6. Teste end-to-end assíncrono criação -> evento -> consumo -> processamento (`OrderEndToEndProcessingIT`) validando status `PROCESSED`
 
 Infraestrutura: Testcontainers (Postgres, Redis, Kafka) + WireMock configurados em `BaseIntegrationTest`.
 
@@ -26,7 +29,9 @@ Criar testes que validem o comportamento completo do sistema com a API de CDs mo
 - [ ] Testes de cenários de falha (timeout, 500, lista vazia)
 - [x] Validação do comportamento do cache (hit/miss inicial)
 - [ ] Testes de retry e circuit breaker
-- [x] Validação inicial de publicação de eventos (fluxo roda sem exceções) *(consumo Kafka real pendente)*
+- [x] Validação inicial de publicação de eventos (fluxo roda sem exceções)
+- [x] Consumo real de evento publicado em Kafka (`OrderEventConsumptionIT`)
+- [x] Teste assíncrono com listener processando pedido (`OrderEndToEndProcessingIT`)
 - [ ] Testes end-to-end completos (fluxos de erro e recuperação)
 
 ## Mock da API de CDs
@@ -136,9 +141,10 @@ Ordem sugerida (minimizando retrabalho):
 2. Cenários de falha WireMock: 500, timeout simulado (latência), lista vazia → asserts de fallback / resposta
 3. Implementar/verificar retry (config mínima + validar número de chamadas WireMock)
 4. Introduzir circuit breaker (se configurado via Resilience4j ou similar) e validar estados (open/half-open)
-5. Evoluir teste de eventos para consumo real (consumer Kafka de teste lendo tópico)
+5. Testes de eventos adicionais: validar publicação de `ORDER_PROCESSED` e `ORDER_FAILED`
 6. Acrescentar teste de expiração de cache (usar TTL curto / manipular tempo se viável)
 7. Refinar utilitários de construção (builder de `OrderRequest`) para reduzir duplicação
+8. Testes de reprocessamento (quando status FAILED) após listener
 
 ## Observações
 

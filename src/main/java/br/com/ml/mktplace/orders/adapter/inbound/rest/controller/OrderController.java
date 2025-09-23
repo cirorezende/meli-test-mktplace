@@ -5,7 +5,6 @@ import br.com.ml.mktplace.orders.adapter.inbound.rest.dto.OrderResponse;
 import br.com.ml.mktplace.orders.adapter.inbound.rest.mapper.OrderRestMapper;
 import br.com.ml.mktplace.orders.domain.model.Order;
 import br.com.ml.mktplace.orders.domain.port.CreateOrderUseCase;
-import br.com.ml.mktplace.orders.domain.port.ProcessOrderUseCase;
 import br.com.ml.mktplace.orders.domain.port.QueryOrderUseCase;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -39,17 +38,14 @@ public class OrderController {
     private static final String API_VERSION = "1.0";
     
     private final CreateOrderUseCase createOrderUseCase;
-    private final ProcessOrderUseCase processOrderUseCase;
     private final QueryOrderUseCase queryOrderUseCase;
     private final OrderRestMapper mapper;
     
     @Autowired
     public OrderController(CreateOrderUseCase createOrderUseCase, 
-                          ProcessOrderUseCase processOrderUseCase,
                           QueryOrderUseCase queryOrderUseCase,
                           OrderRestMapper mapper) {
         this.createOrderUseCase = createOrderUseCase;
-        this.processOrderUseCase = processOrderUseCase;
         this.queryOrderUseCase = queryOrderUseCase;
         this.mapper = mapper;
     }
@@ -59,10 +55,10 @@ public class OrderController {
      * POST /api/v1/orders
      */
     @PostMapping
-    @Operation(summary = "Process a new order", 
-               description = "Creates and processes a new order asynchronously")
+    @Operation(summary = "Create a new order", 
+           description = "Creates an order and publishes ORDER_CREATED event for asynchronous processing. The returned status will usually be RECEIVED; clients should poll or subscribe to events for completion.")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "201", description = "Order created and processing started",
+        @ApiResponse(responseCode = "202", description = "Order accepted for asynchronous processing",
                         content = @Content(schema = @Schema(implementation = OrderResponse.class))),
             @ApiResponse(responseCode = "400", description = "Invalid request data"),
             @ApiResponse(responseCode = "422", description = "Order processing failed"),
@@ -85,26 +81,23 @@ public class OrderController {
             // Convert DTO to domain object
             Order order = mapper.toDomain(request, null);
             
-            // Create the order first
+            // Persist & publish event; processing will occur asynchronously via ORDER_CREATED listener
             Order createdOrder = createOrderUseCase.createOrder(
-                    order.getCustomerId(), 
-                    order.getItems(), 
-                    order.getDeliveryAddress()
+                order.getCustomerId(),
+                order.getItems(),
+                order.getDeliveryAddress()
             );
-            
-            // Process the order asynchronously
-            Order processedOrder = processOrderUseCase.processOrder(createdOrder.getId());
-            
-            // Convert back to response DTO
-            OrderResponse response = mapper.toResponse(processedOrder);
+
+            // Build response with current (initial) state (RECEIVED)
+            OrderResponse response = mapper.toResponse(createdOrder);
             
             // Build response headers
             HttpHeaders headers = buildResponseHeaders(correlationId);
             
-            logger.info("Order processed successfully - ID: {}, Status: {}, Correlation ID: {}", 
-                    processedOrder.getId(), processedOrder.getStatus(), correlationId);
+        logger.info("Order accepted for async processing - ID: {}, Current Status: {}, Correlation ID: {}", 
+            createdOrder.getId(), createdOrder.getStatus(), correlationId);
             
-            return ResponseEntity.status(HttpStatus.CREATED)
+        return ResponseEntity.status(HttpStatus.ACCEPTED)
                     .headers(headers)
                     .body(response);
                     

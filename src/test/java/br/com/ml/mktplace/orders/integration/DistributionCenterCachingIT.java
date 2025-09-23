@@ -5,6 +5,7 @@ import br.com.ml.mktplace.orders.adapter.inbound.rest.dto.OrderItemDto;
 import br.com.ml.mktplace.orders.adapter.inbound.rest.dto.AddressDto;
 import br.com.ml.mktplace.orders.adapter.inbound.rest.dto.OrderResponse;
 import com.github.tomakehurst.wiremock.client.WireMock;
+import br.com.ml.mktplace.orders.integration.support.SharedWireMock;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,8 +20,10 @@ import static com.github.tomakehurst.wiremock.client.WireMock.*;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
- * Testa comportamento de cache: duas criações de pedidos com mesmo item devem
- * resultar em apenas uma chamada ao endpoint externo de Distribution Centers.
+ * Valida comportamento de cache em arquitetura 100% assíncrona (POST retorna 202 + status RECEIVED):
+ * Duas criações de pedidos com mesmo item e mesmo estado devem resultar em apenas
+ * UMA chamada HTTP ao endpoint externo /distribution-centers na primeira execução.
+ * A segunda deve reutilizar o cache (chave versionada por estado) e não gerar nova chamada.
  */
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 public class DistributionCenterCachingIT extends BaseIntegrationTest {
@@ -31,9 +34,13 @@ public class DistributionCenterCachingIT extends BaseIntegrationTest {
     private static final String ITEM = "CACHE1";
 
     @BeforeEach
+    void ensureServer() { SharedWireMock.startIfNeeded(); }
+
+    @BeforeEach
     void resetWireMock() {
         WireMock.reset();
-        stubFor(get(urlPathMatching("/distribution-centers/item/" + ITEM))
+    // Production code currently calls findAllDistributionCenters() -> GET /distribution-centers
+    stubFor(get(urlPathEqualTo("/distribution-centers"))
                 .willReturn(aResponse()
                         .withStatus(200)
                         .withHeader("Content-Type", "application/json")
@@ -50,13 +57,35 @@ public class DistributionCenterCachingIT extends BaseIntegrationTest {
         headers.setContentType(MediaType.APPLICATION_JSON);
 
         ResponseEntity<OrderResponse> r1 = restTemplate.postForEntity("/api/v1/orders", new HttpEntity<>(req1, headers), OrderResponse.class);
-        assertThat(r1.getStatusCode()).isEqualTo(HttpStatus.CREATED);
+    assertThat(r1.getStatusCode()).isEqualTo(HttpStatus.ACCEPTED);
 
-        ResponseEntity<OrderResponse> r2 = restTemplate.postForEntity("/api/v1/orders", new HttpEntity<>(req2, headers), OrderResponse.class);
-        assertThat(r2.getStatusCode()).isEqualTo(HttpStatus.CREATED);
+    // Aguarda primeiro pedido atingir estado final para evitar condições de concorrência
+    OrderResponse firstBody = r1.getBody();
+    assertThat(firstBody).as("Resposta de criação do primeiro pedido não deve ser nula").isNotNull();
+    String firstOrderId = java.util.Objects.requireNonNull(firstBody).getId();
+    assertThat(firstOrderId).isNotBlank();
+    awaitOrderProcessed(firstOrderId);
+
+    ResponseEntity<OrderResponse> r2 = restTemplate.postForEntity("/api/v1/orders", new HttpEntity<>(req2, headers), OrderResponse.class);
+    assertThat(r2.getStatusCode()).isEqualTo(HttpStatus.ACCEPTED);
 
         // Verifica que o endpoint externo foi chamado apenas uma vez
-        verify(1, getRequestedFor(urlPathMatching("/distribution-centers/item/" + ITEM)));
+    verify(1, getRequestedFor(urlPathEqualTo("/distribution-centers")));
+    }
+
+    private void awaitOrderProcessed(String orderId) {
+        long timeoutMs = 10_000; // 10s deve ser suficiente para processamento async local
+        long start = System.currentTimeMillis();
+        while (System.currentTimeMillis() - start < timeoutMs) {
+            ResponseEntity<OrderResponse> resp = restTemplate.getForEntity("/api/v1/orders/" + orderId, OrderResponse.class);
+        OrderResponse body = resp.getBody();
+        if (resp.getStatusCode().is2xxSuccessful() && body != null &&
+            "PROCESSED".equals(body.getStatus())) {
+                return;
+            }
+            try { Thread.sleep(200); } catch (InterruptedException ignored) { }
+        }
+        throw new AssertionError("Pedido não chegou a PROCESSED dentro do timeout: " + orderId);
     }
 
     private OrderRequest buildRequest() {

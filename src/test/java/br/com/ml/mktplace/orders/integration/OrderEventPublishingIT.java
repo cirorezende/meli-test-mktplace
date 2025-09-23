@@ -13,11 +13,12 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.*;
+import com.github.tomakehurst.wiremock.client.WireMock;
+import br.com.ml.mktplace.orders.integration.support.SharedWireMock;
+import org.junit.jupiter.api.BeforeEach;
 
 import java.math.BigDecimal;
-import java.time.Duration;
 import java.util.*;
-import java.util.stream.Collectors;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -28,6 +29,9 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 public class OrderEventPublishingIT extends BaseIntegrationTest {
+
+    @BeforeEach
+    void ensureWireMock() { SharedWireMock.startIfNeeded(); }
 
     @Autowired
     private TestRestTemplate restTemplate;
@@ -52,10 +56,10 @@ public class OrderEventPublishingIT extends BaseIntegrationTest {
         headers.setContentType(MediaType.APPLICATION_JSON);
 
         // Stub WireMock para item EVT123
-        com.github.tomakehurst.wiremock.client.WireMock.stubFor(
-                com.github.tomakehurst.wiremock.client.WireMock.get(
-                                com.github.tomakehurst.wiremock.client.WireMock.urlPathMatching("/distribution-centers/item/EVT123"))
-                        .willReturn(com.github.tomakehurst.wiremock.client.WireMock.aResponse()
+    WireMock.stubFor(
+        WireMock.get(
+                WireMock.urlPathMatching("/distribution-centers/item/EVT123"))
+            .willReturn(WireMock.aResponse()
                                 .withStatus(200)
                                 .withHeader("Content-Type", "application/json")
                                 .withBody("[{\"code\":\"CDX\",\"name\":\"CD X\",\"street\":\"Rua X\",\"city\":\"SP\",\"state\":\"SP\",\"country\":\"BR\",\"zipCode\":\"01000-000\",\"latitude\":-23.6,\"longitude\":-46.7}]")
@@ -66,8 +70,9 @@ public class OrderEventPublishingIT extends BaseIntegrationTest {
         ResponseEntity<OrderResponse> createResponse = restTemplate.postForEntity("/api/v1/orders", new HttpEntity<>(request, headers), OrderResponse.class);
 
         // Assert
-        assertThat(createResponse.getStatusCode()).isEqualTo(HttpStatus.CREATED);
-        assertThat(createResponse.getBody()).isNotNull();
-        assertThat(createResponse.getBody().getId()).isNotBlank();
+    assertThat(createResponse.getStatusCode()).isEqualTo(HttpStatus.ACCEPTED);
+    OrderResponse body = createResponse.getBody();
+    assertThat(body).isNotNull();
+    assertThat(body != null ? body.getId() : null).isNotBlank();
     }
 }

@@ -112,7 +112,7 @@ class ProcessOrderUseCaseImplTest {
     void shouldProcessOrderSuccessfully() {
         // Given
         when(orderRepository.findById("ORDER-001")).thenReturn(Optional.of(validOrder));
-        when(cacheService.get(any(String.class), eq(List.class))).thenReturn(Optional.empty());
+    when(cacheService.get(any(String.class), eq(DistributionCenter[].class))).thenReturn(Optional.empty());
         when(distributionCenterService.findAllDistributionCenters()).thenReturn(availableCenters);
         when(selectionService.selectDistributionCenter(availableCenters, validOrder.getDeliveryAddress()))
             .thenReturn(selectedCenter);
@@ -134,7 +134,7 @@ class ProcessOrderUseCaseImplTest {
         assertThat(result.getStatus()).isEqualTo(OrderStatus.PROCESSED);
         verify(orderRepository, times(2)).save(any(Order.class)); // Processing + Final save
         verify(distributionCenterService).findAllDistributionCenters();
-        verify(cacheService).put(any(String.class), eq(availableCenters), eq(Duration.ofMinutes(5)));
+    verify(cacheService).put(any(String.class), any(DistributionCenter[].class), eq(Duration.ofMinutes(5)));
         verify(selectionService).selectDistributionCenter(availableCenters, validOrder.getDeliveryAddress());
         verify(eventPublisher).publishOrderProcessed(result);
     }
@@ -238,9 +238,8 @@ class ProcessOrderUseCaseImplTest {
     void shouldUseCachedDistributionCentersWhenAvailable() {
         // Given
         when(orderRepository.findById("ORDER-001")).thenReturn(Optional.of(validOrder));
-        @SuppressWarnings("rawtypes")
-        Optional<List> cachedCenters = Optional.of(availableCenters);
-        when(cacheService.get(any(String.class), eq(List.class))).thenReturn(cachedCenters);
+    DistributionCenter[] cachedCenters = availableCenters.toArray(new DistributionCenter[0]);
+    when(cacheService.get(any(String.class), eq(DistributionCenter[].class))).thenReturn(Optional.of(cachedCenters));
         when(selectionService.selectDistributionCenter(availableCenters, validOrder.getDeliveryAddress()))
             .thenReturn(selectedCenter);
         
@@ -258,7 +257,7 @@ class ProcessOrderUseCaseImplTest {
         useCase.processOrder("ORDER-001");
         
         // Then
-        verify(cacheService).get(any(String.class), eq(List.class));
+    verify(cacheService).get(any(String.class), eq(DistributionCenter[].class));
         verify(distributionCenterService, never()).findAllDistributionCenters();
         verify(cacheService, never()).put(any(String.class), any(), any(Duration.class));
     }
@@ -268,7 +267,7 @@ class ProcessOrderUseCaseImplTest {
     void shouldHandleExternalServiceExceptionAndMarkOrderAsFailed() {
         // Given
         when(orderRepository.findById("ORDER-001")).thenReturn(Optional.of(validOrder));
-        when(cacheService.get(any(String.class), eq(List.class))).thenReturn(Optional.empty());
+    when(cacheService.get(any(String.class), eq(DistributionCenter[].class))).thenReturn(Optional.empty());
         when(distributionCenterService.findAllDistributionCenters())
             .thenThrow(new ExternalServiceException("DistributionCenterService", "Service unavailable"));
         
@@ -296,7 +295,7 @@ class ProcessOrderUseCaseImplTest {
     void shouldHandleEmptyDistributionCentersList() {
         // Given
         when(orderRepository.findById("ORDER-001")).thenReturn(Optional.of(validOrder));
-        when(cacheService.get(any(String.class), eq(List.class))).thenReturn(Optional.empty());
+    when(cacheService.get(any(String.class), eq(DistributionCenter[].class))).thenReturn(Optional.empty());
         when(distributionCenterService.findAllDistributionCenters()).thenReturn(List.of());
         
         Order failedOrder = new Order(
@@ -332,7 +331,7 @@ class ProcessOrderUseCaseImplTest {
         );
         
         when(orderRepository.findById("ORDER-001")).thenReturn(Optional.of(failedOrder));
-        when(cacheService.get(any(String.class), eq(List.class))).thenReturn(Optional.empty());
+    when(cacheService.get(any(String.class), eq(DistributionCenter[].class))).thenReturn(Optional.empty());
         when(distributionCenterService.findAllDistributionCenters()).thenReturn(availableCenters);
         when(selectionService.selectDistributionCenter(availableCenters, failedOrder.getDeliveryAddress()))
             .thenReturn(selectedCenter);
@@ -376,7 +375,7 @@ class ProcessOrderUseCaseImplTest {
     void shouldHandleUnexpectedExceptionDuringProcessing() {
         // Given
         when(orderRepository.findById("ORDER-001")).thenReturn(Optional.of(validOrder));
-        when(cacheService.get(any(String.class), eq(List.class)))
+        when(cacheService.get(any(String.class), eq(DistributionCenter[].class)))
             .thenThrow(new RuntimeException("Unexpected cache error"));
         
         // When/Then

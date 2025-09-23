@@ -27,8 +27,9 @@
                     <pattern>{"thread":"%thread"}</pattern>
                 </pattern>
                 <mdc/>
+                <!-- Simplified message pattern (removed faulty %replace JSON escaping) -->
                 <pattern>
-                    <pattern>{"message":"%replace(%msg){"\\n","\\n"}"}</pattern>
+                    <pattern>{"message":"%msg"}</pattern>
                 </pattern>
                 <stackTrace>
                     <fieldName>exception</fieldName>

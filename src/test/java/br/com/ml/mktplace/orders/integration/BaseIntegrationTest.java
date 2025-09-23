@@ -22,8 +22,9 @@ import org.springframework.test.context.DynamicPropertySource;
 public abstract class BaseIntegrationTest {
 
     // PostgreSQL
+    // Use PostGIS-enabled image to support CREATE EXTENSION postgis in Flyway migrations
     protected static final PostgreSQLContainer<?> POSTGRES = new PostgreSQLContainer<>(
-            DockerImageName.parse("postgres:16-alpine")
+            DockerImageName.parse("postgis/postgis:16-3.4").asCompatibleSubstituteFor("postgres")
     ).withDatabaseName("mktplace_orders")
      .withUsername("postgres")
      .withPassword("postgres");
@@ -57,9 +58,12 @@ public abstract class BaseIntegrationTest {
         registry.add("spring.datasource.username", POSTGRES::getUsername);
         registry.add("spring.datasource.password", POSTGRES::getPassword);
 
-        // Redis
-        registry.add("spring.data.redis.host", () -> REDIS.getHost());
-        registry.add("spring.data.redis.port", () -> REDIS.getMappedPort(6379));
+        // Redis (use spring.redis.* so CacheConfig @Value picks up)
+        registry.add("spring.redis.host", () -> REDIS.getHost());
+        registry.add("spring.redis.port", () -> REDIS.getMappedPort(6379));
+        // Ensure tests use no password (image has no auth) and default DB 0
+        registry.add("spring.redis.password", () -> "");
+        registry.add("spring.redis.database", () -> 0);
 
         // Kafka
         registry.add("spring.kafka.bootstrap-servers", KAFKA::getBootstrapServers);

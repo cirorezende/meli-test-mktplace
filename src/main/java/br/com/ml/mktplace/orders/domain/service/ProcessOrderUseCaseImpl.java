@@ -58,6 +58,17 @@ public class ProcessOrderUseCaseImpl implements ProcessOrderUseCase {
             if (order.isInFinalState()) {
                 throw new ProcessOrderException(orderId, "Order is already in final state: " + order.getStatus());
             }
+
+            // Idempotency guard (async pipeline):
+            // Only process orders when status == RECEIVED. For any other non-final status,
+            // the invocation likely results from retries/duplicate events and must not trigger
+            // external side-effects (e.g., fetching distribution centers again). Returning the
+            // current state keeps the pipeline idempotent and ensures exactly-one external call
+            // for a given order lifecycle.
+            if (order.getStatus() != OrderStatus.RECEIVED) {
+                log.debug("Skipping processing for order {} with status {} (idempotency guard)", orderId, order.getStatus());
+                return order; // return current state without side-effects
+            }
             
             // Process order
             return observabilityMetrics.recordProcessing(() -> performOrderProcessing(order));
@@ -167,22 +178,21 @@ public class ProcessOrderUseCaseImpl implements ProcessOrderUseCase {
     }
     
     private List<DistributionCenter> getAvailableDistributionCenters(Address deliveryAddress) {
-        // Try cache first
-        String cacheKey = "distribution-centers:" + deliveryAddress.state();
-        
-        @SuppressWarnings("rawtypes")
-        Optional<List> cachedCentersOpt = cacheService.get(cacheKey, List.class);
-        @SuppressWarnings("unchecked")
-        List<DistributionCenter> cachedCenters = cachedCentersOpt.map(list -> (List<DistributionCenter>) list).orElse(null);
-        
-        if (cachedCenters != null) {
-            return cachedCenters;
+        // Try cache first using typed array to avoid generic List deserialization issues
+    // Versioned key to avoid reading stale cached entries serialized with previous schema (v2 introduced after removing 'coordinates' property)
+    String cacheKey = "distribution-centers:v2:" + deliveryAddress.state();
+
+        Optional<DistributionCenter[]> cachedArrayOpt = cacheService.get(cacheKey, DistributionCenter[].class);
+        if (cachedArrayOpt.isPresent()) {
+            DistributionCenter[] arr = cachedArrayOpt.get();
+            if (arr.length > 0) {
+                return java.util.Arrays.asList(arr);
+            }
         }
-        
-        // Get from service and cache result
+
+        // Get from service and cache result (store as array for simpler (de)serialization)
         List<DistributionCenter> centers = distributionCenterService.findAllDistributionCenters();
-        cacheService.put(cacheKey, centers, java.time.Duration.ofMinutes(5));
-        
+        cacheService.put(cacheKey, centers.toArray(new DistributionCenter[0]), java.time.Duration.ofMinutes(5));
         return centers;
     }
     
