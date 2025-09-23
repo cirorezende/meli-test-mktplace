@@ -99,7 +99,7 @@ Este plano de implementação detalha as tarefas necessárias para desenvolver o
 ### Fase 5: Deploy e Integração
 
 - ✅ **Tarefa 11** - Containerização (Concluída - 21/09/2025)
-- 🚧 **Tarefa 12** - Testes de Integração (Em Progresso - 23/09/2025 / Fluxo básico, cache hit/miss e publicação inicial de evento validados)
+- ✅ **Tarefa 12** - Testes de Integração (Concluída - 23/09/2025 / Fluxo E2E assíncrono, cache v2 com único fetch externo, eventos Kafka)
 
 ## Tabela Consolidada de Status (Atualizado: 23/09/2025)
 
@@ -116,21 +116,28 @@ Este plano de implementação detalha as tarefas necessárias para desenvolver o
 | 09 | Testes Unitários | ✅ Concluída (c/ cobertura JaCoCo) | 23/09/2025 |
 | 10 | Observabilidade | 🚧 Em Progresso | 22/09/2025 |
 | 11 | Containerização | ✅ Concluída | 21/09/2025 |
-| 12 | Testes de Integração | 🚧 Em Progresso (fluxo básico, cache hit/miss, evento inicial) | 23/09/2025 |
+| 12 | Testes de Integração | ✅ Concluída (E2E assíncrono; cache v2 validado) | 23/09/2025 |
 
 ### Próximas Entregas Prioritárias
 
-1. Tarefa 10 - Finalizar dashboards e métricas externas (latência cliente externo / status codes).  
-2. Tarefa 12 - Expandir cenários de integração: falhas (500/timeout/lista vazia), cache hit/miss, eventos Kafka.
+1. Tarefa 10 - Finalizar dashboards e métricas externas (latência do cliente externo, status codes, contadores de eventos Kafka).  
+2. Hardening opcional dos cenários de integração (falhas: 500/timeout/lista vazia; circuit breaker; retries) — fora do escopo mínimo concluído da T12.
 
 ### Notas de Progresso (23/09/2025)
 
-- Testes 100% passando com adoção de Testcontainers para configuração de banco.  
+- Build e `mvn verify` 100% verde com Testcontainers.  
 - Cobertura de código integrada (JaCoCo 0.8.11) com threshold não bloqueante de 85% (INSTRUCTION).  
-- Tarefa 12 avançando: fluxo E2E (criar + recuperar pedido), teste de cache (hit/miss) e validação inicial de publicação de eventos implementados.  
+- Tarefa 12 concluída:
+  - Fluxo E2E assíncrono com POST retornando 202 (RECEIVED) e evolução de estado por consumidor Kafka.
+  - Remoção do prefixo "/api" dos RequestMappings; uso do `server.servlet.context-path=/api` para compor URL final.
+  - Estratégia de cache atualizada: chave versionada `distribution-centers:v2:{UF}` armazenando `DistributionCenter[]` (Jackson resiliente a campos desconhecidos).
+  - Garantia de chamada única ao serviço externo ao processar dois pedidos sequenciais (cache hit no segundo).
+  - Publicação/consumo de eventos Kafka (ORDER_CREATED/ORDER_PROCESSED) validados.
+  - Correção do path WireMock para `/distribution-centers`.
+  - Guardas de idempotência no processamento assíncrono.
+  
 - Observabilidade parcialmente avançada: métricas de pedidos, cache e seleção de CD implementadas.  
-- Próximo incremento: instrumentar cliente HTTP externo (latência, status) + cenários de falha no WireMock.  
-- Planejado: validação de eventos Kafka e testes de cache (hit/miss) antes de circuit breaker.
+- Próximo incremento: instrumentar cliente HTTP externo (latência, status) + cenários de falha no WireMock.
 
 ## Próximos Passos
 
@@ -143,13 +150,13 @@ Após completar todas as tarefas, o sistema estará pronto para:
 
 ## 📊 Resumo do Progresso
 
-### Tarefas Concluídas: 10/12 (83%)
+### Tarefas Concluídas: 11/12 (92%)
 
 ✅ **Fase 1 - Fundação**: 100% concluída (3/3 tarefas)  
 ✅ **Fase 2 - Core de Negócio**: 100% concluída (2/2 tarefas)  
 ✅ **Fase 3 - Adaptadores**: 100% concluída (3/3 tarefas)  
 ✅ **Fase 4 - Qualidade**: 50% concluída (1/2 tarefas)  
-✅ **Fase 5 - Deploy**: 50% concluída (1/2 tarefas) *(T12 em andamento com 3 incrementos concluídos)*
+✅ **Fase 5 - Deploy**: 100% concluída (2/2 tarefas)
 
 ### Estado Atual
 

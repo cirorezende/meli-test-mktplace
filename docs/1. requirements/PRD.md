@@ -62,7 +62,7 @@ Queremos garantir que cada item seja enviado do CD mais adequado, reduzindo praz
 ## Fluxo Principal de Usuário
 
 1. O cliente final realiza uma compra na plataforma de e-commerce, incluindo diversos itens em seu pedido.
-2. O pedido é recebido pelo sistema de backend, que devolve o identificador dopedido gerado e salva o pedido para processamento automático.
+2. O pedido é recebido pelo sistema de backend, que devolve o identificador do pedido gerado e salva o pedido para processamento automático.
 3. Para cada item do pedido, o sistema consulta a API de CDs para identificar quais centros podem atender à entrega.
 4. A inteligência do sistema seleciona o CD mais adequado para cada item, considerando proximidade, disponibilidade e regras logísticas.
 5. O sistema registra o vínculo de cada item ao CD selecionado e envia os detalhes do pedido para o operador logístico, que prepara o pedido para expedição.
