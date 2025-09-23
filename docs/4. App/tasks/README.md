@@ -101,7 +101,7 @@ Este plano de implementação detalha as tarefas necessárias para desenvolver o
 - ✅ **Tarefa 11** - Containerização (Concluída - 21/09/2025)
 - ⏳ **Tarefa 12** - Testes de Integração (Pendente)
 
-## Tabela Consolidada de Status (Atualizado: 22/09/2025)
+## Tabela Consolidada de Status (Atualizado: 23/09/2025)
 
 | Tarefa | Título | Status | Última Atualização |
 |--------|--------|--------|--------------------|
@@ -113,7 +113,7 @@ Este plano de implementação detalha as tarefas necessárias para desenvolver o
 | 06 | Adaptadores de Saída | ✅ Concluída | 21/09/2025 |
 | 07 | Adaptadores de Entrada | ✅ Concluída | 21/09/2025 |
 | 08 | Configuração e Wiring | ✅ Concluída | 21/09/2025 |
-| 09 | Testes Unitários | ✅ Concluída | 22/09/2025 |
+| 09 | Testes Unitários | ✅ Concluída (c/ cobertura JaCoCo) | 23/09/2025 |
 | 10 | Observabilidade | 🚧 Em Progresso | 22/09/2025 |
 | 11 | Containerização | ✅ Concluída | 21/09/2025 |
 | 12 | Testes de Integração | ⏳ Pendente | — |
@@ -123,12 +123,13 @@ Este plano de implementação detalha as tarefas necessárias para desenvolver o
 1. Tarefa 10 - Finalizar dashboards e métricas externas (API CDs / DB).  
 2. Tarefa 12 - Testes de Integração: WireMock + Testcontainers (PostgreSQL, Redis, Kafka).
 
-### Notas de Progresso (22/09/2025)
+### Notas de Progresso (23/09/2025)
 
 - Testes 100% passando com adoção de Testcontainers para configuração de banco.  
+- Cobertura de código integrada (JaCoCo 0.8.11) com threshold não bloqueante de 85% (INSTRUCTION).  
 - Observabilidade avançada: métricas de pedidos, cache e seleção de CD implementadas.  
 - Falta instrumentar cliente HTTP externo para métricas de latência e status.  
-- Preparação para iniciar testes de integração após fechamento da parte visual de observabilidade.
+- Preparação para iniciar testes de integração após fechamento da parte visual de observabilidade e estabilização do baseline de cobertura.
 
 ## Próximos Passos
 
