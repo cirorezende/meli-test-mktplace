@@ -29,16 +29,16 @@ import java.time.Duration;
 @Configuration
 public class CacheConfig {
 
-    @Value("${spring.redis.host:localhost}")
+    @Value("${spring.data.redis.host:localhost}")
     private String redisHost;
 
-    @Value("${spring.redis.port:6379}")
+    @Value("${spring.data.redis.port:6379}")
     private int redisPort;
 
-    @Value("${spring.redis.password:}")
+    @Value("${spring.data.redis.password:}")
     private String redisPassword;
 
-    @Value("${spring.redis.database:0}")
+    @Value("${spring.data.redis.database:0}")
     private int redisDatabase;
 
     @Value("${app.cache.ttl-hours:8}")
@@ -142,11 +142,11 @@ public class CacheConfig {
     static class ProductionCacheConfig {
         
         @Bean
-        public RedisConnectionFactory productionRedisConnectionFactory(
-                @Value("${spring.redis.cluster.nodes:}") String clusterNodes,
-                @Value("${spring.redis.host}") String host,
-                @Value("${spring.redis.port}") int port,
-                @Value("${spring.redis.password}") String password) {
+    public RedisConnectionFactory productionRedisConnectionFactory(
+        @Value("${spring.data.redis.cluster.nodes:}") String clusterNodes,
+        @Value("${spring.data.redis.host}") String host,
+        @Value("${spring.data.redis.port}") int port,
+        @Value("${spring.data.redis.password:}") String password) {
             
             // Em produção, configurar cluster se disponível
             if (clusterNodes != null && !clusterNodes.trim().isEmpty()) {
@@ -157,7 +157,9 @@ public class CacheConfig {
             RedisStandaloneConfiguration config = new RedisStandaloneConfiguration();
             config.setHostName(host);
             config.setPort(port);
-            config.setPassword(password);
+            if (password != null && !password.isBlank()) {
+                config.setPassword(password);
+            }
             
             LettuceConnectionFactory factory = new LettuceConnectionFactory(config);
             factory.setValidateConnection(true);

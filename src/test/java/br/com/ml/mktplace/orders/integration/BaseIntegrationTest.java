@@ -31,8 +31,8 @@ public abstract class BaseIntegrationTest {
 
     // Redis
     protected static final GenericContainer<?> REDIS = new GenericContainer<>(
-            DockerImageName.parse("redis:7-alpine")
-    ).withExposedPorts(6379);
+        DockerImageName.parse("redis:7-alpine")
+    ).withExposedPorts(6379).withReuse(true);
 
     // Kafka
     protected static final KafkaContainer KAFKA = new KafkaContainer(
@@ -58,12 +58,12 @@ public abstract class BaseIntegrationTest {
         registry.add("spring.datasource.username", POSTGRES::getUsername);
         registry.add("spring.datasource.password", POSTGRES::getPassword);
 
-        // Redis (use spring.redis.* so CacheConfig @Value picks up)
-        registry.add("spring.redis.host", () -> REDIS.getHost());
-        registry.add("spring.redis.port", () -> REDIS.getMappedPort(6379));
-        // Ensure tests use no password (image has no auth) and default DB 0
-        registry.add("spring.redis.password", () -> "");
-        registry.add("spring.redis.database", () -> 0);
+    // Redis (use spring.data.redis.* to match Spring Boot 3 conventions)
+    registry.add("spring.data.redis.host", () -> REDIS.getHost());
+    registry.add("spring.data.redis.port", () -> REDIS.getMappedPort(6379));
+    // Ensure tests use no password (image has no auth) and default DB 0
+    registry.add("spring.data.redis.password", () -> "");
+    registry.add("spring.data.redis.database", () -> 0);
 
         // Kafka
         registry.add("spring.kafka.bootstrap-servers", KAFKA::getBootstrapServers);
