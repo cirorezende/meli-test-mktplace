@@ -9,6 +9,7 @@ Task 11 has been successfully implemented, providing a comprehensive Docker-base
 ### Core Components Created
 
 #### 1. **Dockerfile** - Multi-stage Container Build
+
 - **Purpose**: Optimized container image with build and runtime stages
 - **Features**:
   - Amazon Corretto 21 JDK for build stage
@@ -19,6 +20,7 @@ Task 11 has been successfully implemented, providing a comprehensive Docker-base
   - JVM optimization for container environments
 
 #### 2. **docker-compose.yml** - Complete Infrastructure Orchestration
+
 - **Services Included** (8 total):
   - `orders-app`: Main Spring Boot application
   - `postgres`: PostgreSQL 15 with PostGIS extension
@@ -30,17 +32,20 @@ Task 11 has been successfully implemented, providing a comprehensive Docker-base
   - `distribution-centers-api`: WireMock service for API mocking
 
 #### 3. **Configuration Files**
+
 - **application-docker.properties**: Container-specific application configuration
 - **PostgreSQL init script**: Database and PostGIS setup
 - **Redis configuration**: Persistence and memory optimization
 - **WireMock mappings**: Mock distribution centers API data
 
 #### 4. **Build and Run Scripts**
+
 - **build.sh** / **build.ps1**: Cross-platform Docker image building
 - **run.sh** / **run.ps1**: Container orchestration management
 - Support for Windows PowerShell and Linux/Mac Bash
 
 #### 5. **Supporting Infrastructure**
+
 - **.dockerignore**: Build context optimization
 - **Docker Guide**: Comprehensive documentation
 - **Health checks**: Service monitoring and dependency management
@@ -49,18 +54,21 @@ Task 11 has been successfully implemented, providing a comprehensive Docker-base
 ## 🏗️ Architecture Benefits
 
 ### Development Environment
+
 - **Complete Local Stack**: All dependencies containerized
 - **Consistent Environment**: Same environment across development machines
 - **Easy Setup**: Single command deployment
 - **Service Isolation**: Each component runs in isolated container
 
 ### Infrastructure Services
+
 - **Database**: PostgreSQL with PostGIS for spatial data
 - **Cache**: Redis for performance optimization
 - **Messaging**: Kafka for asynchronous processing
 - **Management**: Web interfaces for database and cache administration
 
 ### External Dependencies
+
 - **API Mocking**: WireMock provides distribution centers API simulation
 - **No External Dependencies**: Everything runs locally
 - **Development Data**: Pre-configured with sample distribution centers
@@ -68,6 +76,7 @@ Task 11 has been successfully implemented, providing a comprehensive Docker-base
 ## 🚀 Usage Instructions
 
 ### Quick Start (Windows)
+
 ```powershell
 # Build the application image
 .\scripts\build.ps1
@@ -83,6 +92,7 @@ Task 11 has been successfully implemented, providing a comprehensive Docker-base
 ```
 
 ### Quick Start (Linux/Mac)
+
 ```bash
 # Build the application image
 ./scripts/build.sh
@@ -98,17 +108,19 @@ Task 11 has been successfully implemented, providing a comprehensive Docker-base
 ```
 
 ### Service Endpoints
-- **Orders API**: http://localhost:8080
-- **API Documentation**: http://localhost:8080/swagger-ui.html
-- **Health Check**: http://localhost:8080/actuator/health
-- **pgAdmin**: http://localhost:5050 (admin@orders.com / admin123)
-- **Redis Insight**: http://localhost:5540
-- **Kafka UI**: http://localhost:8081
-- **Distribution Centers Mock**: http://localhost:3000
+
+- **Orders API**: <http://localhost:8080>
+- **API Documentation**: <http://localhost:8080/swagger-ui.html>
+- **Health Check**: <http://localhost:8080/actuator/health>
+- **pgAdmin**: <http://localhost:5050> (<admin@orders.com> / admin123)
+- **Redis Insight**: <http://localhost:5540>
+- **Kafka UI**: <http://localhost:8081>
+- **Distribution Centers Mock**: <http://localhost:3000>
 
 ## 📊 Technical Specifications
 
 ### Container Optimization
+
 - **Multi-stage Build**: Separate build and runtime stages
 - **Minimal Runtime**: Amazon Corretto JRE base image
 - **JVM Tuning**: Container-optimized memory settings
@@ -116,12 +128,14 @@ Task 11 has been successfully implemented, providing a comprehensive Docker-base
 - **Dependency Ordering**: Proper service startup sequence
 
 ### Security Features
+
 - **Non-root Execution**: Application runs as non-privileged user
 - **Network Isolation**: Services communicate through Docker network
 - **Environment Variables**: Secure configuration management
 - **Minimal Attack Surface**: Only necessary ports exposed
 
 ### Performance Optimizations
+
 - **Connection Pooling**: HikariCP with container-optimized settings
 - **Redis Caching**: Application-level and session caching
 - **Build Caching**: Docker layer caching for faster builds
@@ -130,18 +144,21 @@ Task 11 has been successfully implemented, providing a comprehensive Docker-base
 ## 🔧 Monitoring and Management
 
 ### Health Monitoring
+
 - Application health checks via Spring Boot Actuator
 - Database connection monitoring
 - Cache availability validation
 - Message broker connectivity checks
 
 ### Management Interfaces
+
 - pgAdmin for database administration and query execution
 - Redis Insight for cache monitoring and key management
 - Kafka UI for message broker monitoring and topic management
 - WireMock admin interface for API mock management
 
 ### Logging and Debugging
+
 - Centralized logging through Docker Compose
 - Individual service log access
 - Error tracking and debugging support
@@ -150,12 +167,14 @@ Task 11 has been successfully implemented, providing a comprehensive Docker-base
 ## 📚 Documentation
 
 ### Comprehensive Guides
+
 - **Docker Guide** (`docs/docker-guide.md`): Complete containerization documentation
 - **Troubleshooting**: Common issues and solutions
 - **Performance Tuning**: Optimization recommendations
 - **Security Best Practices**: Container security guidelines
 
 ### Development Support
+
 - **Cross-platform Scripts**: Support for Windows, Linux, and Mac
 - **Environment Variables**: Flexible configuration options
 - **Service Dependencies**: Proper startup and dependency management
@@ -183,6 +202,7 @@ With Task 11 (Containerization) completed, the Orders Processing System now has:
 - Cross-platform development support
 
 The system is now ready for:
+
 - **Task 10**: Observability implementation (logging, metrics, monitoring)
 - **Task 12**: Production deployment and scaling considerations
 - **Developer Onboarding**: Quick setup for new team members
