@@ -2,6 +2,7 @@ package br.com.ml.mktplace.orders.adapter.outbound.messaging;
 
 import br.com.ml.mktplace.orders.domain.model.Order;
 import br.com.ml.mktplace.orders.domain.port.EventPublisher;
+import br.com.ml.mktplace.orders.adapter.config.metrics.OrdersMetricsBinder;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -10,6 +11,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.time.Instant;
+import org.slf4j.MDC;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -24,13 +26,16 @@ public class KafkaEventPublisher implements EventPublisher {
     
     private final ObjectMapper objectMapper;
     private final String topicPrefix;
+    private final OrdersMetricsBinder metricsBinder;
     
     @Autowired
     public KafkaEventPublisher(
             ObjectMapper objectMapper,
-            @Value("${app.events.topic-prefix:mktplace}") String topicPrefix) {
+            @Value("${app.events.topic-prefix:mktplace}") String topicPrefix,
+            OrdersMetricsBinder metricsBinder) {
         this.objectMapper = objectMapper;
         this.topicPrefix = topicPrefix;
+        this.metricsBinder = metricsBinder;
     }
     
     @Override
@@ -41,6 +46,7 @@ public class KafkaEventPublisher implements EventPublisher {
         
         Map<String, Object> eventData = createEventData("ORDER_PROCESSED", order);
         publishEvent("order.processed", eventData);
+        metricsBinder.incrementProcessed();
     }
     
     @Override
@@ -60,6 +66,7 @@ public class KafkaEventPublisher implements EventPublisher {
         }
         
         publishEvent("order.failed", eventData);
+        metricsBinder.incrementFailed();
     }
     
     @Override
@@ -90,6 +97,10 @@ public class KafkaEventPublisher implements EventPublisher {
         event.put("aggregateType", "Order");
         
         String topic = topicPrefix + "." + eventType.toLowerCase().replace("_", ".");
+        String correlationId = MDC.get("correlationId");
+        if (correlationId != null) {
+            event.put("correlationId", correlationId);
+        }
         publishEvent(topic, event);
     }
     
@@ -103,6 +114,10 @@ public class KafkaEventPublisher implements EventPublisher {
         eventData.put("status", order.getStatus().name());
         eventData.put("timestamp", Instant.now().toString());
         eventData.put("version", 1);
+        String correlationId = MDC.get("correlationId");
+        if (correlationId != null) {
+            eventData.put("correlationId", correlationId);
+        }
         
         return eventData;
     }

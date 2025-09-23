@@ -11,6 +11,7 @@ import br.com.ml.mktplace.orders.domain.port.OrderRepository;
 import br.com.ml.mktplace.orders.domain.service.CreateOrderUseCaseImpl;
 import br.com.ml.mktplace.orders.domain.service.DistributionCenterSelectionService;
 import br.com.ml.mktplace.orders.domain.service.ProcessOrderUseCaseImpl;
+import br.com.ml.mktplace.orders.adapter.config.metrics.ObservabilityMetrics;
 import br.com.ml.mktplace.orders.domain.service.QueryOrderUseCaseImpl;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -62,14 +63,16 @@ public class ApplicationConfig {
             DistributionCenterService distributionCenterService,
             CacheService cacheService,
             EventPublisher eventPublisher,
-            DistributionCenterSelectionService distributionCenterSelectionService) {
+        DistributionCenterSelectionService distributionCenterSelectionService,
+        ObservabilityMetrics observabilityMetrics) {
         
         return new ProcessOrderUseCaseImpl(
             orderRepository,
             distributionCenterService, 
             cacheService,
             eventPublisher,
-            distributionCenterSelectionService
+            distributionCenterSelectionService,
+            observabilityMetrics
         );
     }
 

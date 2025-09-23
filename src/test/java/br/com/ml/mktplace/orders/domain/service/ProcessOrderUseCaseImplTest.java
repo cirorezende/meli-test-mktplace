@@ -8,6 +8,8 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
+import br.com.ml.mktplace.orders.adapter.config.metrics.ObservabilityMetrics;
 
 import java.math.BigDecimal;
 import java.time.Duration;
@@ -39,6 +41,8 @@ class ProcessOrderUseCaseImplTest {
     @Mock
     private DistributionCenterSelectionService selectionService;
     
+    private ObservabilityMetrics observabilityMetrics;
+    
     private ProcessOrderUseCaseImpl useCase;
     
     private Order validOrder;
@@ -47,12 +51,16 @@ class ProcessOrderUseCaseImplTest {
     
     @BeforeEach
     void setUp() {
+        // Real metrics registry (in-memory, no side effects)
+        observabilityMetrics = new ObservabilityMetrics(new SimpleMeterRegistry());
+        
         useCase = new ProcessOrderUseCaseImpl(
-            orderRepository,
-            distributionCenterService,
-            cacheService,
-            eventPublisher,
-            selectionService
+                orderRepository,
+                distributionCenterService,
+                cacheService,
+                eventPublisher,
+                selectionService,
+                observabilityMetrics
         );
         
         // Create test data

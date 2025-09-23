@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import br.com.ml.mktplace.orders.adapter.config.metrics.ObservabilityMetrics;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Component;
 
@@ -24,11 +25,13 @@ public class RedisCacheService implements CacheService {
     
     private final RedisTemplate<String, Object> redisTemplate;
     private final ObjectMapper objectMapper;
+    private final ObservabilityMetrics observabilityMetrics;
     
     @Autowired
-    public RedisCacheService(RedisTemplate<String, Object> redisTemplate, ObjectMapper objectMapper) {
+    public RedisCacheService(RedisTemplate<String, Object> redisTemplate, ObjectMapper objectMapper, ObservabilityMetrics observabilityMetrics) {
         this.redisTemplate = redisTemplate;
         this.objectMapper = objectMapper;
+        this.observabilityMetrics = observabilityMetrics;
     }
     
     @Override
@@ -45,7 +48,10 @@ public class RedisCacheService implements CacheService {
             
             if (cached == null) {
                 logger.debug("Cache miss for key: {}", key);
+                observabilityMetrics.cacheMiss("redis");
                 return Optional.empty();
+            } else {
+                observabilityMetrics.cacheHit("redis");
             }
             
             T value;

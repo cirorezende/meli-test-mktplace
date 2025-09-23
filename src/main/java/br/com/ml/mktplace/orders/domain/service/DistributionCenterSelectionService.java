@@ -2,6 +2,8 @@ package br.com.ml.mktplace.orders.domain.service;
 
 import br.com.ml.mktplace.orders.domain.model.Address;
 import br.com.ml.mktplace.orders.domain.model.DistributionCenter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -12,6 +14,8 @@ import java.util.List;
  */
 @Service
 public class DistributionCenterSelectionService {
+
+    private static final Logger log = LoggerFactory.getLogger(DistributionCenterSelectionService.class);
 
     /**
      * Selects the closest distribution center to the delivery address
@@ -39,17 +43,23 @@ public class DistributionCenterSelectionService {
         
         for (DistributionCenter center : availableCenters) {
             double distance = calculateDistance(
-                deliveryAddress.coordinates().latitude().doubleValue(), 
-                deliveryAddress.coordinates().longitude().doubleValue(),
-                center.getCoordinates().latitude().doubleValue(),
-                center.getCoordinates().longitude().doubleValue()
+                    deliveryAddress.coordinates().latitude().doubleValue(),
+                    deliveryAddress.coordinates().longitude().doubleValue(),
+                    center.getCoordinates().latitude().doubleValue(),
+                    center.getCoordinates().longitude().doubleValue()
             );
-            
+
+            log.debug("Distance avaliada center={} distanceKm={}", center.code(), String.format("%.3f", distance));
+
             if (distance < minDistance) {
                 minDistance = distance;
                 closestCenter = center;
             }
         }
+
+    log.info("CD mais próximo selecionado center={} distanceKm={}",
+        closestCenter != null ? closestCenter.code() : "NONE",
+                String.format("%.3f", minDistance));
         
         if (closestCenter == null) {
             throw new IllegalStateException("Could not select any distribution center");

@@ -1,11 +1,14 @@
 package br.com.ml.mktplace.orders.domain.service;
 
 import br.com.ml.mktplace.orders.domain.model.*;
+import br.com.ml.mktplace.orders.adapter.config.metrics.ObservabilityMetrics;
 import br.com.ml.mktplace.orders.domain.port.ProcessOrderUseCase;
 import br.com.ml.mktplace.orders.domain.port.OrderRepository;
 import br.com.ml.mktplace.orders.domain.port.DistributionCenterService;
 import br.com.ml.mktplace.orders.domain.port.CacheService;
 import br.com.ml.mktplace.orders.domain.port.EventPublisher;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -25,18 +28,22 @@ public class ProcessOrderUseCaseImpl implements ProcessOrderUseCase {
     private final CacheService cacheService;
     private final EventPublisher eventPublisher;
     private final DistributionCenterSelectionService selectionService;
+    private final ObservabilityMetrics observabilityMetrics;
+    private static final Logger log = LoggerFactory.getLogger(ProcessOrderUseCaseImpl.class);
 
     public ProcessOrderUseCaseImpl(
             OrderRepository orderRepository,
             DistributionCenterService distributionCenterService,
             CacheService cacheService,
             EventPublisher eventPublisher,
-            DistributionCenterSelectionService selectionService) {
+            DistributionCenterSelectionService selectionService,
+            ObservabilityMetrics observabilityMetrics) {
         this.orderRepository = orderRepository;
         this.distributionCenterService = distributionCenterService;
         this.cacheService = cacheService;
         this.eventPublisher = eventPublisher;
         this.selectionService = selectionService;
+        this.observabilityMetrics = observabilityMetrics;
     }
 
     @Override
@@ -53,7 +60,7 @@ public class ProcessOrderUseCaseImpl implements ProcessOrderUseCase {
             }
             
             // Process order
-            return performOrderProcessing(order);
+            return observabilityMetrics.recordProcessing(() -> performOrderProcessing(order));
             
         } catch (OrderNotFoundException | ProcessOrderException e) {
             throw e;
@@ -82,7 +89,7 @@ public class ProcessOrderUseCaseImpl implements ProcessOrderUseCase {
             Order updatedOrder = orderRepository.save(order);
             
             // Process order
-            return performOrderProcessing(updatedOrder);
+            return observabilityMetrics.recordProcessing(() -> performOrderProcessing(updatedOrder));
             
         } catch (OrderNotFoundException | ProcessOrderException e) {
             throw e;
@@ -109,20 +116,22 @@ public class ProcessOrderUseCaseImpl implements ProcessOrderUseCase {
             // Assign distribution centers to items
             int itemsProcessed = 0;
             int itemsFailed = 0;
-            
+            observabilityMetrics.recordItemsPerOrder(order.getItems().size());
+
             for (OrderItem item : order.getItems()) {
                 try {
                     DistributionCenter selectedCenter = selectionService.selectDistributionCenter(
                         availableCenters, 
                         order.getDeliveryAddress()
                     );
-                    
                     item.assignDistributionCenter(selectedCenter);
+                    observabilityMetrics.incrementDcSelection(selectedCenter.code());
+                    log.info("CD selecionado para item {} pedido {} -> {}", item.getItemId(), order.getId(), selectedCenter.code());
                     itemsProcessed++;
-                    
                 } catch (Exception e) {
                     // Log error but continue with other items
                     itemsFailed++;
+                    log.warn("Falha ao atribuir CD para item {} do pedido {}: {}", item.getItemId(), order.getId(), e.getMessage());
                 }
             }
             
