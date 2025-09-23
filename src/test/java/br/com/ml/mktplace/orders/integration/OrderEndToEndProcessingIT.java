@@ -78,7 +78,7 @@ public class OrderEndToEndProcessingIT extends BaseIntegrationTest {
         headers.set("X-Correlation-ID", UUID.randomUUID().toString());
 
         // Act - create order
-    ResponseEntity<OrderResponse> createResponse = restTemplate.postForEntity("/api/v1/orders", new HttpEntity<>(request, headers), OrderResponse.class);
+    ResponseEntity<OrderResponse> createResponse = restTemplate.postForEntity("/v1/orders", new HttpEntity<>(request, headers), OrderResponse.class);
     assertThat(createResponse.getStatusCode()).isEqualTo(HttpStatus.ACCEPTED);
     OrderResponse createdBody = createResponse.getBody();
     assertThat(createdBody).isNotNull();
@@ -92,7 +92,7 @@ public class OrderEndToEndProcessingIT extends BaseIntegrationTest {
         OrderResponse finalState = null;
         long maxWaitMs = 15_000; // generous for container spin latency
         while (Duration.between(start, Instant.now()).toMillis() < maxWaitMs) {
-            ResponseEntity<OrderResponse> get = restTemplate.getForEntity("/api/v1/orders/" + orderId, OrderResponse.class);
+            ResponseEntity<OrderResponse> get = restTemplate.getForEntity("/v1/orders/" + orderId, OrderResponse.class);
             if (get.getStatusCode().is2xxSuccessful() && get.getBody() != null) {
                 current = get.getBody();
                 lastNonNull = current;

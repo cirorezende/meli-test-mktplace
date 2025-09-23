@@ -56,7 +56,7 @@ public class DistributionCenterCachingIT extends BaseIntegrationTest {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
 
-        ResponseEntity<OrderResponse> r1 = restTemplate.postForEntity("/api/v1/orders", new HttpEntity<>(req1, headers), OrderResponse.class);
+    ResponseEntity<OrderResponse> r1 = restTemplate.postForEntity("/v1/orders", new HttpEntity<>(req1, headers), OrderResponse.class);
     assertThat(r1.getStatusCode()).isEqualTo(HttpStatus.ACCEPTED);
 
     // Aguarda primeiro pedido atingir estado final para evitar condições de concorrência
@@ -66,7 +66,7 @@ public class DistributionCenterCachingIT extends BaseIntegrationTest {
     assertThat(firstOrderId).isNotBlank();
     awaitOrderProcessed(firstOrderId);
 
-    ResponseEntity<OrderResponse> r2 = restTemplate.postForEntity("/api/v1/orders", new HttpEntity<>(req2, headers), OrderResponse.class);
+    ResponseEntity<OrderResponse> r2 = restTemplate.postForEntity("/v1/orders", new HttpEntity<>(req2, headers), OrderResponse.class);
     assertThat(r2.getStatusCode()).isEqualTo(HttpStatus.ACCEPTED);
 
         // Verifica que o endpoint externo foi chamado apenas uma vez
@@ -77,7 +77,7 @@ public class DistributionCenterCachingIT extends BaseIntegrationTest {
         long timeoutMs = 10_000; // 10s deve ser suficiente para processamento async local
         long start = System.currentTimeMillis();
         while (System.currentTimeMillis() - start < timeoutMs) {
-            ResponseEntity<OrderResponse> resp = restTemplate.getForEntity("/api/v1/orders/" + orderId, OrderResponse.class);
+            ResponseEntity<OrderResponse> resp = restTemplate.getForEntity("/v1/orders/" + orderId, OrderResponse.class);
         OrderResponse body = resp.getBody();
         if (resp.getStatusCode().is2xxSuccessful() && body != null &&
             "PROCESSED".equals(body.getStatus())) {

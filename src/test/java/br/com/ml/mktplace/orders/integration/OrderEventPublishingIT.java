@@ -67,7 +67,7 @@ public class OrderEventPublishingIT extends BaseIntegrationTest {
         );
 
         // Act
-        ResponseEntity<OrderResponse> createResponse = restTemplate.postForEntity("/api/v1/orders", new HttpEntity<>(request, headers), OrderResponse.class);
+    ResponseEntity<OrderResponse> createResponse = restTemplate.postForEntity("/v1/orders", new HttpEntity<>(request, headers), OrderResponse.class);
 
         // Assert
     assertThat(createResponse.getStatusCode()).isEqualTo(HttpStatus.ACCEPTED);

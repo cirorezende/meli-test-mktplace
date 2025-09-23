@@ -30,7 +30,7 @@ import java.util.stream.Collectors;
  * REST Controller for Order management endpoints
  */
 @RestController
-@RequestMapping("/api/v1/orders")
+@RequestMapping("/v1/orders")
 @Tag(name = "Orders", description = "Order processing and management endpoints")
 public class OrderController {
     
@@ -52,7 +52,7 @@ public class OrderController {
     
     /**
      * Process a new order
-     * POST /api/v1/orders
+     * POST /v1/orders (full URL includes app context path if configured, e.g., /api/v1/orders)
      */
     @PostMapping
     @Operation(summary = "Create a new order", 
@@ -109,7 +109,7 @@ public class OrderController {
     
     /**
      * Get order by ID
-     * GET /api/v1/orders/{id}
+     * GET /v1/orders/{id}
      */
     @GetMapping("/{id}")
     @Operation(summary = "Get order by ID", 
@@ -154,7 +154,7 @@ public class OrderController {
     
     /**
      * List all orders
-     * GET /api/v1/orders
+     * GET /v1/orders
      */
     @GetMapping
     public ResponseEntity<List<OrderResponse>> listOrders(
@@ -189,7 +189,7 @@ public class OrderController {
     
     /**
      * Get orders by customer ID
-     * GET /api/v1/orders/customer/{customerId}
+     * GET /v1/orders/customer/{customerId}
      */
     @GetMapping("/customer/{customerId}")
     public ResponseEntity<List<OrderResponse>> getOrdersByCustomer(

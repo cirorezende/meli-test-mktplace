@@ -69,14 +69,14 @@ public class OrderFlowIT extends BaseIntegrationTest {
 
         HttpEntity<OrderRequest> entity = new HttpEntity<>(request, headers);
 
-    ResponseEntity<OrderResponse> createResponse = restTemplate.postForEntity("/api/v1/orders", entity, OrderResponse.class);
+    ResponseEntity<OrderResponse> createResponse = restTemplate.postForEntity("/v1/orders", entity, OrderResponse.class);
     assertThat(createResponse.getStatusCode()).isEqualTo(HttpStatus.ACCEPTED);
     OrderResponse createdBody = createResponse.getBody();
     assertThat(createdBody).isNotNull();
     String orderId = createdBody != null ? createdBody.getId() : null;
         assertThat(orderId).isNotBlank();
 
-    ResponseEntity<OrderResponse> getResponse = restTemplate.getForEntity("/api/v1/orders/" + orderId, OrderResponse.class);
+    ResponseEntity<OrderResponse> getResponse = restTemplate.getForEntity("/v1/orders/" + orderId, OrderResponse.class);
     assertThat(getResponse.getStatusCode()).isEqualTo(HttpStatus.OK);
     OrderResponse fetched = getResponse.getBody();
     assertThat(fetched).isNotNull();
