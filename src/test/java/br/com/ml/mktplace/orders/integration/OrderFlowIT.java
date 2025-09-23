@@ -1,7 +1,8 @@
 package br.com.ml.mktplace.orders.integration;
 
 import br.com.ml.mktplace.orders.adapter.inbound.rest.dto.OrderRequest;
-import br.com.ml.mktplace.orders.adapter.inbound.rest.dto.OrderRequestItem;
+import br.com.ml.mktplace.orders.adapter.inbound.rest.dto.OrderItemDto;
+import br.com.ml.mktplace.orders.adapter.inbound.rest.dto.AddressDto;
 import br.com.ml.mktplace.orders.adapter.inbound.rest.dto.OrderResponse;
 import com.github.tomakehurst.wiremock.WireMockServer;
 import com.github.tomakehurst.wiremock.client.WireMock;
@@ -33,9 +34,9 @@ public class OrderFlowIT extends BaseIntegrationTest {
 
     @BeforeAll
     static void startWireMock() {
-        wireMockServer = new WireMockServer(WireMockConfiguration.options().dynamicPort());
+        wireMockServer = new WireMockServer(WireMockConfiguration.options().port(9999));
         wireMockServer.start();
-        WireMock.configureFor("localhost", wireMockServer.port());
+        WireMock.configureFor("localhost", 9999);
     }
 
     @AfterAll
@@ -59,16 +60,18 @@ public class OrderFlowIT extends BaseIntegrationTest {
     void deveCriarERecuperarPedidoComSucesso() {
         String correlationId = UUID.randomUUID().toString();
 
-        OrderRequest request = new OrderRequest();
-        request.setCustomerId("customer-1");
-        request.setItems(List.of(new OrderRequestItem("ABC123", 2, new BigDecimal("10.00"))));
-        request.setCity("São Paulo");
-        request.setState("SP");
-        request.setCountry("BR");
-        request.setStreet("Rua Teste");
-        request.setZipCode("01000-000");
-        request.setLatitude(new BigDecimal("-23.5"));
-        request.setLongitude(new BigDecimal("-46.6"));
+    OrderRequest request = new OrderRequest();
+    request.setCustomerId("customer-1");
+    request.setItems(List.of(new OrderItemDto("ABC123", 2)));
+    AddressDto deliveryAddress = new AddressDto(
+        "Rua Teste",
+        "São Paulo",
+        "SP",
+        "BR",
+        "01000-000",
+        new AddressDto.CoordinatesDto(new BigDecimal("-23.5"), new BigDecimal("-46.6"))
+    );
+    request.setDeliveryAddress(deliveryAddress);
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);

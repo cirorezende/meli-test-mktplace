@@ -18,9 +18,9 @@ Criar testes que validem o comportamento completo do sistema com a API de CDs mo
 - [x] Primeiro cenário de sucesso (criação + consulta de pedido)
 - [ ] Testes de múltiplos itens / seleção de CD
 - [ ] Testes de cenários de falha (timeout, 500, 404)
-- [ ] Validação do comportamento do cache
+- [x] Validação do comportamento do cache (hit/miss – primeiro caso implementado)
 - [ ] Testes de retry e circuit breaker
-- [ ] Validação de eventos publicados (Kafka)
+- [x] Validação inicial de publicação de eventos (fluxo roda sem exceções) *(validação de consumo real pendente)*
 - [ ] Testes end-to-end completos (fluxos de erro e recuperação)
 
 ## Mock da API de CDs
@@ -125,10 +125,10 @@ Relatórios de cobertura continuam sendo gerados via JaCoCo (incluem ITs ao roda
 ## Próximos Passos Imediatos
 
 1. Adicionar stubs de falha (500, timeout, lista vazia) e asserts de fallback/resiliência
-2. Validar publicação de eventos Kafka (inspecionar tópicos ou usar consumer test harness)
-3. Adicionar cenários de cache hit/miss (duas chamadas consecutivas para mesmo item)
-4. Introduzir testes de retry (simulando falha temporária seguida de sucesso)
-5. Adicionar simulação de circuit breaker (se configuração já exposta; caso contrário planejar impl)
+2. Evoluir teste de eventos para consumo (adicionar consumer de teste real)
+3. Teste de múltiplos itens e seleção de CD mais próximo
+4. Introduzir testes de retry (falha temporária seguida de sucesso)
+5. Planejar implementação ou simulação de circuit breaker (caso ainda não exista configuração)
 
 ## Observações
 
