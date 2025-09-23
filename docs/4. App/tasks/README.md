@@ -70,7 +70,7 @@ Este plano de implementação detalha as tarefas necessárias para desenvolver o
 - [x] **Configuração completa por ambiente** *(ApplicationConfig, DatabaseConfig, CacheConfig, HttpClientConfig, KafkaConfig)*
 - [x] **Sistema conteinerizado e funcional** *(Docker + docker-compose com 8 serviços)*
 - 🚧 Observabilidade completa implementada *(dashboards + métricas externas pendentes)*
-- ⏳ Testes de integração com mocks *(pendente)*
+- 🚧 Testes de integração em andamento *(primeiro fluxo E2E validado)*
 
 ## Status das Tarefas
 
@@ -120,16 +120,17 @@ Este plano de implementação detalha as tarefas necessárias para desenvolver o
 
 ### Próximas Entregas Prioritárias
 
-1. Tarefa 10 - Finalizar dashboards e métricas externas (API CDs / DB).  
-2. Tarefa 12 - Testes de Integração: WireMock + Testcontainers (PostgreSQL, Redis, Kafka).
+1. Tarefa 10 - Finalizar dashboards e métricas externas (latência cliente externo / status codes).  
+2. Tarefa 12 - Expandir cenários de integração: falhas (500/timeout/lista vazia), cache hit/miss, eventos Kafka.
 
 ### Notas de Progresso (23/09/2025)
 
 - Testes 100% passando com adoção de Testcontainers para configuração de banco.  
 - Cobertura de código integrada (JaCoCo 0.8.11) com threshold não bloqueante de 85% (INSTRUCTION).  
-- Observabilidade avançada: métricas de pedidos, cache e seleção de CD implementadas.  
-- Falta instrumentar cliente HTTP externo para métricas de latência e status.  
-- Preparação para iniciar testes de integração após fechamento da parte visual de observabilidade e estabilização do baseline de cobertura.
+- Iniciada Tarefa 12: primeiro fluxo E2E (criar + recuperar pedido) com WireMock + Containers (Postgres/Redis/Kafka).  
+- Observabilidade parcialmente avançada: métricas de pedidos, cache e seleção de CD implementadas.  
+- Próximo incremento: instrumentar cliente HTTP externo (latência, status) + cenários de falha no WireMock.  
+- Planejado: validação de eventos Kafka e testes de cache (hit/miss) antes de circuit breaker.
 
 ## Próximos Passos
 
