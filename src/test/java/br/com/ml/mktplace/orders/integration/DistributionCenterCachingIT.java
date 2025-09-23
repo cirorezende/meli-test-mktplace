@@ -2,7 +2,6 @@ package br.com.ml.mktplace.orders.integration;
 
 import br.com.ml.mktplace.orders.adapter.inbound.rest.dto.OrderRequest;
 import br.com.ml.mktplace.orders.adapter.inbound.rest.dto.OrderItemDto;
-import br.com.ml.mktplace.orders.adapter.inbound.rest.dto.AddressDto;
 import br.com.ml.mktplace.orders.adapter.inbound.rest.dto.OrderResponse;
 import com.github.tomakehurst.wiremock.client.WireMock;
 import br.com.ml.mktplace.orders.integration.support.SharedWireMock;
@@ -13,7 +12,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.http.*;
 
-import java.math.BigDecimal;
 import java.util.List;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.*;
@@ -92,15 +90,7 @@ public class DistributionCenterCachingIT extends BaseIntegrationTest {
         OrderRequest request = new OrderRequest();
     request.setCustomerId("customer-cache");
     request.setItems(List.of(new OrderItemDto(ITEM, 1)));
-    AddressDto address = new AddressDto(
-        "Rua Cache",
-        "São Paulo",
-        "SP",
-        "BR",
-        "01000-000",
-        new AddressDto.CoordinatesDto(new BigDecimal("-23.5"), new BigDecimal("-46.6"))
-    );
-    request.setDeliveryAddress(address);
+    // deliveryAddress is no longer part of the request; it will be resolved later in processing
         return request;
     }
 }

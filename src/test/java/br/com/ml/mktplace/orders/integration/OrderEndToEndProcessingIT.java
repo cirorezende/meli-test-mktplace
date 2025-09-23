@@ -1,6 +1,5 @@
 package br.com.ml.mktplace.orders.integration;
 
-import br.com.ml.mktplace.orders.adapter.inbound.rest.dto.AddressDto;
 import br.com.ml.mktplace.orders.adapter.inbound.rest.dto.OrderItemDto;
 import br.com.ml.mktplace.orders.adapter.inbound.rest.dto.OrderRequest;
 import br.com.ml.mktplace.orders.adapter.inbound.rest.dto.OrderResponse;
@@ -12,7 +11,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.http.*;
 
-import java.math.BigDecimal;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
@@ -63,15 +61,7 @@ public class OrderEndToEndProcessingIT extends BaseIntegrationTest {
         OrderRequest request = new OrderRequest();
         request.setCustomerId("customer-async-proc");
         request.setItems(List.of(new OrderItemDto(itemId, 1)));
-        AddressDto addr = new AddressDto(
-                "Rua Proc",
-                "São Paulo",
-                "SP",
-                "BR",
-                "01000-000",
-                new AddressDto.CoordinatesDto(new BigDecimal("-23.5"), new BigDecimal("-46.6"))
-        );
-        request.setDeliveryAddress(addr);
+    // deliveryAddress removed from request; will be resolved later during async processing
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);

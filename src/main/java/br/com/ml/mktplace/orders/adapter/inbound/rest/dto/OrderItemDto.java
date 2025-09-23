@@ -1,6 +1,7 @@
 package br.com.ml.mktplace.orders.adapter.inbound.rest.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Positive;
 
@@ -18,6 +19,7 @@ public class OrderItemDto {
     private int quantity;
     
     // Response-only fields
+    @Schema(description = "DC code selected during processing; not required on requests", readOnly = true)
     @JsonProperty("distributionCenterCode")
     private String distributionCenterCode;
     

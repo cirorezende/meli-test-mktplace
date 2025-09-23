@@ -2,7 +2,6 @@ package br.com.ml.mktplace.orders.integration;
 
 import br.com.ml.mktplace.orders.adapter.inbound.rest.dto.OrderRequest;
 import br.com.ml.mktplace.orders.adapter.inbound.rest.dto.OrderItemDto;
-import br.com.ml.mktplace.orders.adapter.inbound.rest.dto.AddressDto;
 import br.com.ml.mktplace.orders.adapter.inbound.rest.dto.OrderResponse;
 import br.com.ml.mktplace.orders.integration.support.SharedWireMock;
 import org.junit.jupiter.api.*;
@@ -11,7 +10,6 @@ import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.*;
 
-import java.math.BigDecimal;
 import java.util.List;
 import java.util.UUID;
 
@@ -53,15 +51,7 @@ public class OrderFlowIT extends BaseIntegrationTest {
     OrderRequest request = new OrderRequest();
     request.setCustomerId("customer-1");
     request.setItems(List.of(new OrderItemDto("ABC123", 2)));
-    AddressDto deliveryAddress = new AddressDto(
-        "Rua Teste",
-        "São Paulo",
-        "SP",
-        "BR",
-        "01000-000",
-        new AddressDto.CoordinatesDto(new BigDecimal("-23.5"), new BigDecimal("-46.6"))
-    );
-    request.setDeliveryAddress(deliveryAddress);
+            // deliveryAddress removed from request; will be resolved later during processing
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);

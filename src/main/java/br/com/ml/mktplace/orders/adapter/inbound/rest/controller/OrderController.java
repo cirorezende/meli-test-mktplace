@@ -9,6 +9,7 @@ import br.com.ml.mktplace.orders.domain.port.QueryOrderUseCase;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -57,6 +58,21 @@ public class OrderController {
     @PostMapping
     @Operation(summary = "Create a new order", 
            description = "Creates an order and publishes ORDER_CREATED event for asynchronous processing. The returned status will usually be RECEIVED; clients should poll or subscribe to events for completion.")
+    @io.swagger.v3.oas.annotations.parameters.RequestBody(
+        description = "Order creation payload (customerId and items only)",
+        required = true,
+        content = @Content(
+            mediaType = "application/json",
+            schema = @Schema(implementation = OrderRequest.class),
+            examples = {
+                @ExampleObject(
+                    name = "MinimalOrder",
+                    summary = "Valid order with two items",
+                    value = "{\n  \"customerId\": \"CUST-12345\",\n  \"items\": [\n    { \"itemId\": \"ITEM-001\", \"quantity\": 2 },\n    { \"itemId\": \"ITEM-002\", \"quantity\": 1 }\n  ]\n}"
+                )
+            }
+        )
+    )
     @ApiResponses(value = {
         @ApiResponse(responseCode = "202", description = "Order accepted for asynchronous processing",
                         content = @Content(schema = @Schema(implementation = OrderResponse.class))),

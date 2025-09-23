@@ -1,6 +1,5 @@
 package br.com.ml.mktplace.orders.integration;
 
-import br.com.ml.mktplace.orders.adapter.inbound.rest.dto.AddressDto;
 import br.com.ml.mktplace.orders.adapter.inbound.rest.dto.OrderItemDto;
 import br.com.ml.mktplace.orders.adapter.inbound.rest.dto.OrderRequest;
 import br.com.ml.mktplace.orders.adapter.inbound.rest.dto.OrderResponse;
@@ -15,7 +14,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.http.*;
 
-import java.math.BigDecimal;
 import java.time.Duration;
 import java.util.*;
 
@@ -47,15 +45,7 @@ public class OrderEventConsumptionIT extends BaseIntegrationTest {
         OrderRequest request = new OrderRequest();
         request.setCustomerId("customer-event-consumer");
         request.setItems(List.of(new OrderItemDto(itemId, 1)));
-        AddressDto addr = new AddressDto(
-                "Rua Consumo",
-                "São Paulo",
-                "SP",
-                "BR",
-                "01000-000",
-                new AddressDto.CoordinatesDto(new BigDecimal("-23.5"), new BigDecimal("-46.6"))
-        );
-        request.setDeliveryAddress(addr);
+    // deliveryAddress removed from request; will be resolved later during processing
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
@@ -63,8 +53,9 @@ public class OrderEventConsumptionIT extends BaseIntegrationTest {
         // Act - cria pedido (deverá disparar eventos)
     ResponseEntity<OrderResponse> createResponse = restTemplate.postForEntity("/v1/orders", new HttpEntity<>(request, headers), OrderResponse.class);
     assertThat(createResponse.getStatusCode()).isEqualTo(HttpStatus.ACCEPTED);
-        assertThat(createResponse.getBody()).isNotNull();
-        String orderId = createResponse.getBody().getId();
+        OrderResponse created = createResponse.getBody();
+        assertThat(created).isNotNull();
+        String orderId = created != null ? created.getId() : null;
         assertThat(orderId).isNotBlank();
 
         // Kafka consumer manual para ler eventos (default topic configurado em KafkaConfig: orders.events)

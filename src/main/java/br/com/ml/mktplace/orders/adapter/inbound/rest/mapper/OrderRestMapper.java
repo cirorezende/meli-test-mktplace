@@ -25,10 +25,23 @@ public class OrderRestMapper {
         List<OrderItem> orderItems = request.getItems().stream()
                 .map(this::toDomain)
                 .collect(Collectors.toList());
-        
-        Address deliveryAddress = toDomain(request.getDeliveryAddress());
-        
-        return new Order(request.getCustomerId(), orderItems, deliveryAddress);
+
+        // Since delivery address is no longer provided in the request, we create
+        // a temporary placeholder address. The real address should be resolved
+        // later during processing (e.g., from customer profile or another service).
+        Address placeholderAddress = new Address(
+                "TBD Street",
+                "TBD City",
+                "TBD",
+                "TBD",
+                "00000-000",
+                new Address.Coordinates(
+                        java.math.BigDecimal.ZERO,
+                        java.math.BigDecimal.ZERO
+                )
+        );
+
+        return new Order(request.getCustomerId(), orderItems, placeholderAddress);
     }
     
     /**

@@ -2,12 +2,7 @@ package br.com.ml.mktplace.orders.integration;
 
 import br.com.ml.mktplace.orders.adapter.inbound.rest.dto.OrderRequest;
 import br.com.ml.mktplace.orders.adapter.inbound.rest.dto.OrderItemDto;
-import br.com.ml.mktplace.orders.adapter.inbound.rest.dto.AddressDto;
 import br.com.ml.mktplace.orders.adapter.inbound.rest.dto.OrderResponse;
-import org.apache.kafka.clients.consumer.ConsumerConfig;
-import org.apache.kafka.clients.consumer.ConsumerRecord;
-import org.apache.kafka.clients.consumer.KafkaConsumer;
-import org.apache.kafka.common.serialization.StringDeserializer;
 import org.junit.jupiter.api.*;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
@@ -17,7 +12,6 @@ import com.github.tomakehurst.wiremock.client.WireMock;
 import br.com.ml.mktplace.orders.integration.support.SharedWireMock;
 import org.junit.jupiter.api.BeforeEach;
 
-import java.math.BigDecimal;
 import java.util.*;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -42,15 +36,7 @@ public class OrderEventPublishingIT extends BaseIntegrationTest {
         OrderRequest request = new OrderRequest();
     request.setCustomerId("customer-events");
     request.setItems(List.of(new OrderItemDto("EVT123", 1)));
-    AddressDto addr = new AddressDto(
-        "Rua Eventos",
-        "São Paulo",
-        "SP",
-        "BR",
-        "01000-000",
-        new AddressDto.CoordinatesDto(new BigDecimal("-23.5"), new BigDecimal("-46.6"))
-    );
-    request.setDeliveryAddress(addr);
+    // deliveryAddress removed from request; will be resolved later during processing
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
