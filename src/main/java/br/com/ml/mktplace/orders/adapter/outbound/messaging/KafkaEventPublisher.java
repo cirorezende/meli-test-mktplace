@@ -12,6 +12,7 @@ import org.springframework.stereotype.Component;
 
 import java.time.Instant;
 import org.slf4j.MDC;
+import org.springframework.kafka.core.KafkaTemplate;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -27,6 +28,8 @@ public class KafkaEventPublisher implements EventPublisher {
     private final ObjectMapper objectMapper;
     private final String topicPrefix;
     private final OrdersMetricsBinder metricsBinder;
+    @Autowired(required = false)
+    private KafkaTemplate<String, Object> orderEventsKafkaTemplate; // Optional: only present when Kafka infra enabled
     
     @Autowired
     public KafkaEventPublisher(
@@ -134,6 +137,17 @@ public class KafkaEventPublisher implements EventPublisher {
             
             // For now, we just log the event
             logger.info("Event published successfully: {}", eventData.get("eventType"));
+            // If Kafka template is available (integration tests with Testcontainers), send to default events topic
+            if (orderEventsKafkaTemplate != null) {
+                try {
+                    Object keyObj = eventData.get("aggregateId");
+                    String key = keyObj != null ? keyObj.toString() : null;
+                    orderEventsKafkaTemplate.sendDefault(key, eventData);
+                    logger.info("Event dispatched to Kafka default topic '{}' with key {}", orderEventsKafkaTemplate.getDefaultTopic(), key);
+                } catch (Exception sendEx) {
+                    logger.error("Failed to send event to Kafka (non-fatal) {}", eventData.get("eventType"), sendEx);
+                }
+            }
             
         } catch (Exception e) {
             logger.error("Failed to publish event: {}", eventData.get("eventType"), e);
