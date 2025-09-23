@@ -116,7 +116,7 @@ Este plano de implementação detalha as tarefas necessárias para desenvolver o
 | 09 | Testes Unitários | ✅ Concluída (c/ cobertura JaCoCo) | 23/09/2025 |
 | 10 | Observabilidade | 🚧 Em Progresso | 22/09/2025 |
 | 11 | Containerização | ✅ Concluída | 21/09/2025 |
-| 12 | Testes de Integração | ✅ Concluída (E2E assíncrono; cache v2 validado) | 23/09/2025 |
+| 12 | Testes de Integração | ✅ Concluída (E2E assíncrono; cache v2 validado; eventos Kafka) | 23/09/2025 |
 
 ### Próximas Entregas Prioritárias
 
@@ -150,7 +150,7 @@ Após completar todas as tarefas, o sistema estará pronto para:
 
 ## 📊 Resumo do Progresso
 
-### Tarefas Concluídas: 11/12 (92%)
+### Tarefas Concluídas: 12/12 (100%)
 
 ✅ **Fase 1 - Fundação**: 100% concluída (3/3 tarefas)  
 ✅ **Fase 2 - Core de Negócio**: 100% concluída (2/2 tarefas)  

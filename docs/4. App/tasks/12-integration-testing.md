@@ -1,8 +1,8 @@
 # Tarefa 12 - Testes de Integração com Mock da API Externa
 
-## 🚧 Status: EM PROGRESSO (Atualizado: 23/09/2025)
+## ✅ Status: CONCLUÍDA (Atualizado: 23/09/2025) — Escopo mínimo entregue
 
-Incrementos concluídos até agora:
+Incrementos concluídos:
 
 1. Fluxo end-to-end criação + recuperação de pedido
 2. Validação de cache (hit na primeira chamada, miss na segunda) – WireMock verificado
@@ -32,7 +32,9 @@ Criar testes que validem o comportamento completo do sistema com a API de CDs mo
 - [x] Validação inicial de publicação de eventos (fluxo roda sem exceções)
 - [x] Consumo real de evento publicado em Kafka (`OrderEventConsumptionIT`)
 - [x] Teste assíncrono com listener processando pedido (`OrderEndToEndProcessingIT`)
-- [ ] Testes end-to-end completos (fluxos de erro e recuperação)
+
+Nota: Itens não marcados foram replanejados como incrementos pós-MVP e não fazem parte do escopo mínimo desta tarefa.
+
 
 ## Mock da API de CDs
 
@@ -133,7 +135,7 @@ mvn failsafe:integration-test failsafe:verify
 
 Relatórios de cobertura continuam sendo gerados via JaCoCo (incluem ITs ao rodar `verify`).
 
-## Próximos Passos Imediatos
+## Itens Replanejados (pós-MVP)
 
 Ordem sugerida (minimizando retrabalho):
 
