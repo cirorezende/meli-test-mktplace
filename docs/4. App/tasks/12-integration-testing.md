@@ -1,8 +1,8 @@
 # Tarefa 12 - Testes de Integração com Mock da API Externa
 
-## ⏳ Status: PENDENTE (Atualizado: 22/09/2025)
+## 🚧 Status: EM PROGRESSO (Atualizado: 23/09/2025)
 
-Escopo definido. Implementação aguardando finalização da Tarefa 10 (Observabilidade) para instrumentar métricas e logs que auxiliarão na validação dos testes.
+Implementação iniciada. Primeiro fluxo end-to-end (criação + recuperação de pedido) validado com infraestrutura dinâmica via Testcontainers e WireMock básico.
 
 ## Objetivo
 
@@ -14,13 +14,14 @@ Criar testes que validem o comportamento completo do sistema com a API de CDs mo
 
 ## Critérios de Aceitação
 
-- [ ] Mock server para API de CDs configurado
-- [ ] Testes de cenários de sucesso da API
+- [x] Mock server para API de CDs configurado (WireMock dinâmico por teste)
+- [x] Primeiro cenário de sucesso (criação + consulta de pedido)
+- [ ] Testes de múltiplos itens / seleção de CD
 - [ ] Testes de cenários de falha (timeout, 500, 404)
 - [ ] Validação do comportamento do cache
 - [ ] Testes de retry e circuit breaker
-- [ ] Validação de eventos publicados
-- [ ] Testes end-to-end com mock completo
+- [ ] Validação de eventos publicados (Kafka)
+- [ ] Testes end-to-end completos (fluxos de erro e recuperação)
 
 ## Mock da API de CDs
 
@@ -84,10 +85,11 @@ Criar testes que validem o comportamento completo do sistema com a API de CDs mo
 
 ## Configuração de Teste
 
-- Profile `integration-test`
-- TestContainers para PostgreSQL e Redis
-- WireMock para API externa
-- Kafka embedded para eventos
+- Profile `integration-test` (ativado via `@ActiveProfiles` na base)
+- Testcontainers: PostgreSQL 16-alpine, Redis 7-alpine, Kafka (Confluent 7.4.1)
+- WireMock server dinâmico por classe de teste (porta dinâmica)
+- `BaseIntegrationTest` centraliza containers + propriedades dinâmicas
+- Futura extensão: reuso de containers com `testcontainers.reuse.enable=true`
 
 ## Validações
 
@@ -99,10 +101,39 @@ Criar testes que validem o comportamento completo do sistema com a API de CDs mo
 
 ## Ferramentas
 
-- WireMock para mock da API
-- TestContainers para infraestrutura
-- Spring Boot Test para contexto
-- Testcontainers Kafka para eventos
+- JUnit 5 + Spring Boot Test (@SpringBootTest)
+- WireMock (stubs HTTP de Distribution Centers)
+- Testcontainers (PostgreSQL, Redis, Kafka)
+- Maven Failsafe Plugin (padrão de nomenclatura *IT.java)
+
+## Execução
+
+Para executar unit + integration tests:
+
+```bash
+mvn clean verify
+```
+
+Somente testes de integração (já tendo feito compile/test antes):
+
+```bash
+mvn failsafe:integration-test failsafe:verify
+```
+
+Relatórios de cobertura continuam sendo gerados via JaCoCo (incluem ITs ao rodar `verify`).
+
+## Próximos Passos Imediatos
+
+1. Adicionar stubs de falha (500, timeout, lista vazia) e asserts de fallback/resiliência
+2. Validar publicação de eventos Kafka (inspecionar tópicos ou usar consumer test harness)
+3. Adicionar cenários de cache hit/miss (duas chamadas consecutivas para mesmo item)
+4. Introduzir testes de retry (simulando falha temporária seguida de sucesso)
+5. Adicionar simulação de circuit breaker (se configuração já exposta; caso contrário planejar impl)
+
+## Observações
+
+- Uso de porta estática 9999 placeholder removido posteriormente quando WireMock registrar URL dinâmica nas propriedades (ajuste futuro: Property override em `@DynamicPropertySource` após start do WireMock)
+- Considerar criar utilitário para construir DTOs repetidos (builder de OrderRequest)
 
 ## ADRs Relacionados
 

@@ -116,7 +116,7 @@ Este plano de implementação detalha as tarefas necessárias para desenvolver o
 | 09 | Testes Unitários | ✅ Concluída (c/ cobertura JaCoCo) | 23/09/2025 |
 | 10 | Observabilidade | 🚧 Em Progresso | 22/09/2025 |
 | 11 | Containerização | ✅ Concluída | 21/09/2025 |
-| 12 | Testes de Integração | ⏳ Pendente | — |
+| 12 | Testes de Integração | 🚧 Em Progresso | 23/09/2025 |
 
 ### Próximas Entregas Prioritárias
 
