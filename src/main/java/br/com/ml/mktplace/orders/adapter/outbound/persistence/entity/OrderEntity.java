@@ -2,6 +2,8 @@ package br.com.ml.mktplace.orders.adapter.outbound.persistence.entity;
 
 import br.com.ml.mktplace.orders.domain.model.OrderStatus;
 import jakarta.persistence.*;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 import org.locationtech.jts.geom.Point;
 
 import java.time.Instant;
@@ -27,6 +29,7 @@ public class OrderEntity {
     @Column(name = "customer_id", length = 26, nullable = false)
     private String customerId;
 
+    @JdbcTypeCode(SqlTypes.JSON)
     @Column(name = "delivery_address", columnDefinition = "jsonb", nullable = false)
     private String deliveryAddressJson;
 

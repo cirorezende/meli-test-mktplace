@@ -1,5 +1,9 @@
 # Tarefa 12 - Testes de Integração com Mock da API Externa
 
+## ⏳ Status: PENDENTE (Atualizado: 22/09/2025)
+
+Escopo definido. Implementação aguardando finalização da Tarefa 10 (Observabilidade) para instrumentar métricas e logs que auxiliarão na validação dos testes.
+
 ## Objetivo
 
 Implementar testes de integração focados na validação da integração com a API externa de CDs, utilizando mocks conforme mencionado nos requisitos.

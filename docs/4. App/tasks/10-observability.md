@@ -1,5 +1,9 @@
 # Tarefa 10 - Implementação de Observabilidade
 
+## ⏳ Status: PENDENTE (Atualizado: 22/09/2025)
+
+Planejado. Implementação ainda não iniciada no código. Próximo passo imediato após estabilização do fluxo de pedidos.
+
 ## Objetivo
 
 Implementar logging estruturado, métricas e tracing para monitoramento e troubleshooting do sistema.

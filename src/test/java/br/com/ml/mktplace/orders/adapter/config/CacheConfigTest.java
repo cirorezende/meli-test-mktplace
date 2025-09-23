@@ -83,24 +83,6 @@ class CacheConfigTest {
     }
 
     @Test
-    @DisplayName("Should create String RedisTemplate with String serializers")
-    void shouldCreateStringRedisTemplateWithStringSerializers() {
-        // Given
-        RedisConnectionFactory connectionFactory = cacheConfig.redisConnectionFactory();
-        
-        // When
-        RedisTemplate<String, String> stringTemplate = cacheConfig.stringRedisTemplate(connectionFactory);
-        
-        // Then
-        assertNotNull(stringTemplate);
-        assertThat(stringTemplate.getConnectionFactory()).isSameAs(connectionFactory);
-        assertThat(stringTemplate.getKeySerializer()).isInstanceOf(StringRedisSerializer.class);
-        assertThat(stringTemplate.getValueSerializer()).isInstanceOf(StringRedisSerializer.class);
-        assertThat(stringTemplate.getHashKeySerializer()).isInstanceOf(StringRedisSerializer.class);
-        assertThat(stringTemplate.getHashValueSerializer()).isInstanceOf(StringRedisSerializer.class);
-    }
-
-    @Test
     @DisplayName("Should create default cache TTL")
     void shouldCreateDefaultCacheTtl() {
         // When

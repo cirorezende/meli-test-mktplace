@@ -23,24 +23,24 @@ Este plano de implementação detalha as tarefas necessárias para desenvolver o
 
 ### Fase 2: Core de Negócio (Tarefas 4-5)
 
-4. **Implementação dos Casos de Uso** - Lógica de negócio e algoritmos
-5. **Configuração do Banco de Dados** - PostgreSQL com PostGIS
+1. **Implementação dos Casos de Uso** - Lógica de negócio e algoritmos
+2. **Configuração do Banco de Dados** - PostgreSQL com PostGIS
 
 ### Fase 3: Adaptadores (Tarefas 6-8)
 
-6. **Adaptadores de Saída** - Repositórios, clientes HTTP, cache
-7. **Adaptadores de Entrada** - Controllers REST e APIs
-8. **Configuração e Wiring** - Injeção de dependências
+1. **Adaptadores de Saída** - Repositórios, clientes HTTP, cache
+2. **Adaptadores de Entrada** - Controllers REST e APIs
+3. **Configuração e Wiring** - Injeção de dependências
 
 ### Fase 4: Qualidade e Observabilidade (Tarefas 9-10)
 
-9. **Testes Unitários** - Cobertura do core de negócio
-10. **Observabilidade** - Logging, métricas e monitoramento
+1. **Testes Unitários** - Cobertura do core de negócio
+2. **Observabilidade** - Logging, métricas e monitoramento
 
 ### Fase 5: Deploy e Integração (Tarefas 11-12)
 
-11. **Containerização** - Docker e AWS Fargate
-12. **Testes de Integração** - Validação com mocks
+1. **Containerização** - Docker e AWS Fargate
+2. **Testes de Integração** - Validação com mocks
 
 ## Principais Decisões Arquiteturais Aplicadas
 
@@ -101,6 +101,35 @@ Este plano de implementação detalha as tarefas necessárias para desenvolver o
 - ✅ **Tarefa 11** - Containerização (Concluída - 21/09/2025)
 - ⏳ **Tarefa 12** - Testes de Integração (Pendente)
 
+## Tabela Consolidada de Status (Atualizado: 22/09/2025)
+
+| Tarefa | Título | Status | Última Atualização |
+|--------|--------|--------|--------------------|
+| 01 | Setup Inicial do Projeto | ✅ Concluída | 21/09/2025 |
+| 02 | Modelagem do Domínio | ✅ Concluída | 21/09/2025 |
+| 03 | Definição das Portas | ✅ Concluída | 21/09/2025 |
+| 04 | Implementação dos Casos de Uso | ✅ Concluída | 21/09/2025 |
+| 05 | Configuração do Banco de Dados | ✅ Concluída | 21/09/2025 |
+| 06 | Adaptadores de Saída | ✅ Concluída | 21/09/2025 |
+| 07 | Adaptadores de Entrada | ✅ Concluída | 21/09/2025 |
+| 08 | Configuração e Wiring | ✅ Concluída | 21/09/2025 |
+| 09 | Testes Unitários | ✅ Concluída | 21/09/2025 |
+| 10 | Observabilidade | ⏳ Pendente | — |
+| 11 | Containerização | ✅ Concluída | 21/09/2025 |
+| 12 | Testes de Integração | ⏳ Pendente | — |
+
+### Próximas Entregas Prioritárias
+
+1. Tarefa 10 - Observabilidade: implementar logging estruturado JSON, métricas Micrometer e correlation IDs.
+2. Tarefa 12 - Testes de Integração: configurar WireMock + Testcontainers para PostgreSQL, Redis e Kafka.
+
+### Notas de Progresso (22/09/2025)
+
+- Fluxo de criação e processamento de pedidos validado end-to-end em perfil `dev`.
+- Fallback de centros de distribuição implementado para desenvolvimento, reduzindo dependência externa.
+- Persistência JSONB e campos geoespaciais funcionando corretamente (erros de mapeamento resolvidos).
+- Próximo foco: visibilidade operacional (logs, métricas, tracing leve) e robustez via testes de integração.
+
 ## Próximos Passos
 
 Após completar todas as tarefas, o sistema estará pronto para:
@@ -112,7 +141,7 @@ Após completar todas as tarefas, o sistema estará pronto para:
 
 ## 📊 Resumo do Progresso
 
-**Tarefas Concluídas: 10/12 (83%)**
+### Tarefas Concluídas: 10/12 (83%)
 
 ✅ **Fase 1 - Fundação**: 100% concluída (3/3 tarefas)
 ✅ **Fase 2 - Core de Negócio**: 100% concluída (2/2 tarefas)  
@@ -121,6 +150,7 @@ Após completar todas as tarefas, o sistema estará pronto para:
 ✅ **Fase 5 - Deploy**: 50% concluída (1/2 tarefas)
 
 ### Estado Atual
+
 - **Core de Domínio**: ✅ Completo (entidades, portas, casos de uso)
 - **Database**: ✅ Configurado (PostgreSQL + PostGIS + migrations)
 - **Testes**: ✅ Implementados (251 testes unitários, 97% sucesso - 244 passando)

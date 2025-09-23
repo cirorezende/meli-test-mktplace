@@ -112,25 +112,6 @@ public class CacheConfig {
     }
 
     /**
-     * RedisTemplate específico para Strings (para casos simples).
-     */
-    @Bean
-    public RedisTemplate<String, String> stringRedisTemplate(RedisConnectionFactory connectionFactory) {
-        RedisTemplate<String, String> template = new RedisTemplate<>();
-        template.setConnectionFactory(connectionFactory);
-        
-        StringRedisSerializer stringSerializer = new StringRedisSerializer();
-        template.setDefaultSerializer(stringSerializer);
-        template.setKeySerializer(stringSerializer);
-        template.setValueSerializer(stringSerializer);
-        template.setHashKeySerializer(stringSerializer);
-        template.setHashValueSerializer(stringSerializer);
-        
-        template.afterPropertiesSet();
-        return template;
-    }
-
-    /**
      * Bean com TTL padrão configurável.
      * Retorna a duração padrão para cache conforme ADR-010 (8 horas).
      */

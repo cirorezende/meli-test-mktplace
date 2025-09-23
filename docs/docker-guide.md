@@ -5,6 +5,7 @@ This document provides comprehensive instructions for running the Orders Process
 ## 🐳 Quick Start
 
 ### Prerequisites
+
 - Docker Desktop (Windows/Mac) or Docker Engine (Linux)
 - Docker Compose v2.0+
 - At least 4GB of available RAM
@@ -13,6 +14,7 @@ This document provides comprehensive instructions for running the Orders Process
 ### Running the Application
 
 #### Windows (PowerShell)
+
 ```powershell
 # Build and start all services
 .\scripts\build.ps1
@@ -26,6 +28,7 @@ This document provides comprehensive instructions for running the Orders Process
 ```
 
 #### Linux/Mac (Bash)
+
 ```bash
 # Build and start all services
 ./scripts/build.sh
@@ -43,12 +46,14 @@ This document provides comprehensive instructions for running the Orders Process
 The containerized environment includes:
 
 ### Core Application
+
 - **orders-app**: Main Spring Boot application
   - Port: 8080
-  - Health check: `/actuator/health`
-  - API docs: `/swagger-ui.html`
+  - Health check: `/api/actuator/health`
+  - API docs: `/api/swagger-ui.html`
 
 ### Infrastructure Services
+
 - **PostgreSQL 15 + PostGIS**: Primary database
   - Port: 5432
   - Database: `orders_db`
@@ -64,25 +69,27 @@ The containerized environment includes:
   - Zookeeper: 2181
 
 ### Management Interfaces
+
 - **pgAdmin**: PostgreSQL management
-  - URL: http://localhost:5050
-  - Email: admin@orders.com
+  - URL: <http://localhost:5050>
+  - Email: <admin@orders.com>
   - Password: admin123
 
 - **Redis Insight**: Redis management
-  - URL: http://localhost:5540
+  - URL: <http://localhost:5540>
 
 - **Kafka UI**: Kafka monitoring
-  - URL: http://localhost:8081
+  - URL: <http://localhost:8081>
 
 ### External Service Mocks
+
 - **WireMock**: Distribution Centers API mock
-  - URL: http://localhost:3000
+  - URL: <http://localhost:3000>
   - Mock data includes distribution centers for São Paulo, Rio de Janeiro, and Belo Horizonte
 
 ## 📁 Container Structure
 
-```
+``` java
 ├── Dockerfile                    # Multi-stage application build
 ├── docker-compose.yml            # Service orchestration
 ├── .dockerignore                 # Build context optimization
@@ -141,6 +148,7 @@ MANAGEMENT_SERVER_PORT=8080
 ## 🚀 Deployment Commands
 
 ### Build Commands
+
 ```bash
 # Build application image
 docker-compose build orders-app
@@ -153,6 +161,7 @@ docker-compose pull
 ```
 
 ### Runtime Commands
+
 ```bash
 # Start all services
 docker-compose up -d
@@ -174,6 +183,7 @@ docker-compose exec redis redis-cli -a redis_pass
 ```
 
 ### Maintenance Commands
+
 ```bash
 # Restart services
 docker-compose restart orders-app
@@ -192,18 +202,20 @@ docker volume prune -f
 ## 📊 Monitoring & Health Checks
 
 ### Application Health
+
 ```bash
 # Health check endpoint
-curl http://localhost:8080/actuator/health
+curl http://localhost:8080/api/actuator/health
 
 # Application info
-curl http://localhost:8080/actuator/info
+curl http://localhost:8080/api/actuator/info
 
 # Metrics
-curl http://localhost:8080/actuator/metrics
+curl http://localhost:8080/api/actuator/metrics
 ```
 
 ### Database Health
+
 ```bash
 # Connect to PostgreSQL
 docker-compose exec postgres psql -U orders_user -d orders_db
@@ -213,6 +225,7 @@ SELECT PostGIS_Version();
 ```
 
 ### Cache Health
+
 ```bash
 # Connect to Redis
 docker-compose exec redis redis-cli -a redis_pass
@@ -226,6 +239,7 @@ INFO memory
 ### Common Issues
 
 #### Port Conflicts
+
 ```bash
 # Check port usage
 netstat -tulpn | grep :8080
@@ -238,6 +252,7 @@ services:
 ```
 
 #### Memory Issues
+
 ```bash
 # Increase Docker memory limit (4GB+)
 # Add to docker-compose.yml
@@ -250,6 +265,7 @@ services:
 ```
 
 #### Database Connection Issues
+
 ```bash
 # Check database logs
 docker-compose logs postgres
@@ -259,6 +275,7 @@ docker-compose exec postgres psql -U orders_user -d orders_db -c "\dt"
 ```
 
 #### Application Startup Issues
+
 ```bash
 # Check application logs
 docker-compose logs -f orders-app
@@ -268,6 +285,7 @@ docker-compose run --rm orders-app bash
 ```
 
 ### Log Analysis
+
 ```bash
 # Application logs with timestamps
 docker-compose logs -f -t orders-app
@@ -282,6 +300,7 @@ docker-compose logs orders-app > app.log 2>&1
 ## 🧪 Testing
 
 ### Integration Tests
+
 ```bash
 # Run tests against containers
 ./scripts/run.sh start
@@ -291,6 +310,7 @@ curl -X POST http://localhost:8080/api/orders \
 ```
 
 ### Performance Testing
+
 ```bash
 # Load test with curl
 for i in {1..100}; do
@@ -302,17 +322,21 @@ wait
 ## 📈 Performance Optimization
 
 ### JVM Tuning
+
 The Dockerfile includes optimized JVM settings:
+
 ```dockerfile
 ENV JAVA_OPTS="-Xmx1536m -Xms512m -XX:+UseG1GC -XX:MaxGCPauseMillis=100"
 ```
 
 ### Database Optimization
+
 - Connection pooling (HikariCP)
 - Prepared statement caching
 - PostGIS spatial indexing
 
 ### Cache Strategy
+
 - Redis for session storage
 - Application-level caching
 - Database query result caching
@@ -320,21 +344,74 @@ ENV JAVA_OPTS="-Xmx1536m -Xms512m -XX:+UseG1GC -XX:MaxGCPauseMillis=100"
 ## 🔒 Security
 
 ### Container Security
+
 - Non-root user execution
 - Minimal base image (Amazon Corretto)
 - Security scanning with Trivy
 
 ### Network Security
+
 - Internal Docker network
 - No unnecessary port exposure
 - Environment-based secrets
 
 ### Data Security
+
 - Database credentials via environment variables
 - Redis password protection
 - TLS/SSL termination at load balancer
 
-## 📚 Additional Resources
+## � Troubleshooting
+
+### Application Issues
+
+**Symptoms**: HTTP 500 errors on all endpoints, including health checks
+**Root Cause**: Application treating REST endpoints as static resources
+**Current Status**: Under investigation
+
+```bash
+# Check application logs for errors
+docker logs orders-app --tail 50
+
+# Verify container health status
+docker ps --format "table {{.Names}}\t{{.Status}}"
+
+# Restart application container if needed
+docker-compose restart orders-app
+```
+
+**Known Issues**:
+
+- All API endpoints (including `/api/actuator/*`) return HTTP 500
+- Spring MVC not properly routing requests to controllers
+- Requests being handled by ResourceHttpRequestHandler instead of REST controllers
+
+**Workaround**: Container infrastructure is healthy, application requires code-level debugging
+
+### Infrastructure Issues
+
+**Database Connection**:
+
+```bash
+# Test database connectivity
+docker-compose exec postgres pg_isready -U orders_user -d orders_db
+```
+
+**Redis Connection**:
+
+```bash
+# Test Redis connectivity  
+docker-compose exec redis redis-cli ping
+```
+
+**Kafka Connection**:
+
+```bash
+# Check Kafka status
+docker-compose exec kafka kafka-topics.sh --bootstrap-server localhost:9092 --list
+```
+
+## �📚 Additional Resources
 
 - [Spring Boot Docker Guide](https://spring.io/guides/topicals/spring-boot-docker/)
 - [Docker Compose Best Practices](https://docs.docker.com/compose/production/)
@@ -344,6 +421,7 @@ ENV JAVA_OPTS="-Xmx1536m -Xms512m -XX:+UseG1GC -XX:MaxGCPauseMillis=100"
 ## 🆘 Support
 
 For issues related to containerization:
+
 1. Check this documentation
 2. Review Docker Compose logs
 3. Verify system requirements

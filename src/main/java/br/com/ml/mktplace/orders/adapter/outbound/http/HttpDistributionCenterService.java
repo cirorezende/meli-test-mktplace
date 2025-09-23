@@ -22,6 +22,7 @@ import java.util.List;
  * Integrates with external service to fetch distribution center information.
  */
 @Component
+@org.springframework.context.annotation.Profile("!dev")
 public class HttpDistributionCenterService implements DistributionCenterService {
     
     private static final Logger logger = LoggerFactory.getLogger(HttpDistributionCenterService.class);

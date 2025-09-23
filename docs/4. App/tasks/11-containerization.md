@@ -23,6 +23,7 @@ Criar Dockerfile otimizado, configurações de deploy e scripts necessários par
 ## ✅ Implementação Realizada
 
 ### Dockerfile Multi-stage Otimizado
+
 - ✅ **Base image**: Amazon Corretto 21 (JDK para build, JRE para runtime)
 - ✅ **Maven build** com cache de dependências otimizado
 - ✅ **Compilação** da aplicação sem execução de testes
@@ -30,6 +31,7 @@ Criar Dockerfile otimizado, configurações de deploy e scripts necessários par
 - ✅ **Health check** configurado via Spring Boot Actuator
 
 ### docker-compose.yml Completo (8 serviços)
+
 - ✅ **orders-app**: Aplicação Spring Boot principal
 - ✅ **postgres**: PostgreSQL 15 com PostGIS extension
 - ✅ **redis**: Redis 7 para caching
@@ -40,6 +42,7 @@ Criar Dockerfile otimizado, configurações de deploy e scripts necessários par
 - ✅ **distribution-centers-api**: WireMock para APIs externas
 
 ### Configuração de Ambiente Testada
+
 - ✅ **Inicialização completa**: Todos os 8 serviços funcionando
 - ✅ **Dependências resolvidas**: PostgreSQL + PostGIS + Redis + Kafka
 - ✅ **Aplicação funcional**: Spring Boot iniciou em 4.2 segundos
@@ -48,6 +51,7 @@ Criar Dockerfile otimizado, configurações de deploy e scripts necessários par
 - ✅ **Health checks**: Monitoramento de serviços implementado
 
 ### Scripts de Gerenciamento
+
 - ✅ **build.sh / build.ps1**: Build cross-platform da imagem Docker
 - ✅ **run.sh / run.ps1**: Gerenciamento do ambiente completo
 - ✅ **Suporte Windows/Linux**: Scripts para ambas plataformas
@@ -152,19 +156,22 @@ services:
 ### 🎯 Resultados Obtidos
 
 **Ambiente Funcional Completo:**
+
 - 8 serviços rodando simultaneamente
 - Aplicação Spring Boot inicializada com sucesso
 - Tempo de startup: 4.2 segundos
 - Todos os health checks funcionando
 
 **Endpoints Disponíveis:**
-- API Principal: http://localhost:8080/api
-- pgAdmin: http://localhost:5050 
-- Kafka UI: http://localhost:8081
-- Redis Insight: http://localhost:5540
-- WireMock: http://localhost:3000
+
+- API Principal: <http://localhost:8080/api>
+- pgAdmin: <http://localhost:5050>
+- Kafka UI: <http://localhost:8081>
+- Redis Insight: <http://localhost:5540>
+- WireMock: <http://localhost:3000>
 
 ### 🔧 Problemas Resolvidos
+
 1. ✅ Maven wrapper → Maven direto
 2. ✅ Redis bean conflicts → Bean overriding habilitado  
 3. ✅ PostGIS dialect → PostgreSQL dialect padrão
@@ -172,6 +179,7 @@ services:
 5. ✅ Propriedades faltantes → Configurações adicionadas
 
 ### 🚀 Comando de Execução
+
 ```bash
 docker-compose up -d  # Ambiente completo funcionando
 ```

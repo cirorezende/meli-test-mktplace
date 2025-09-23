@@ -156,9 +156,21 @@ public class OrderEntityMapper {
         String city = node.get("city").asText();
         String state = node.get("state").asText();
         String country = node.get("country").asText();
-        String postalCode = node.get("postalCode").asText();
+        // O JSON armazenado pode ter sido gerado a partir do record Address cujo campo é 'zipCode'.
+        // O código original buscava 'postalCode', causando NPE. Fallback para 'zipCode'.
+        JsonNode postalOrZipNode = node.get("postalCode");
+        if (postalOrZipNode == null) {
+            postalOrZipNode = node.get("zipCode");
+        }
+        if (postalOrZipNode == null) {
+            throw new IllegalArgumentException("Address JSON missing zipCode/postalCode field");
+        }
+        String postalCode = postalOrZipNode.asText();
         
         JsonNode coordinatesNode = node.get("coordinates");
+        if (coordinatesNode == null || coordinatesNode.get("latitude") == null || coordinatesNode.get("longitude") == null) {
+            throw new IllegalArgumentException("Address JSON missing coordinates (latitude/longitude)");
+        }
         Address.Coordinates coordinates = new Address.Coordinates(
             new BigDecimal(coordinatesNode.get("latitude").asText()),
             new BigDecimal(coordinatesNode.get("longitude").asText())

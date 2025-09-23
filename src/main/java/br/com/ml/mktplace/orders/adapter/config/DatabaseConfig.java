@@ -87,6 +87,9 @@ public class DatabaseConfig {
         // Health check query para PostgreSQL
         config.setConnectionTestQuery("SELECT 1");
         
+        // Forçar autoCommit=false
+        config.setAutoCommit(false);
+        
         // Configurações específicas para PostgreSQL
         config.addDataSourceProperty("reWriteBatchedInserts", "true");
         config.addDataSourceProperty("cachePrepStmts", "true");
