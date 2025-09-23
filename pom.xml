@@ -132,7 +132,7 @@
             <groupId>org.testcontainers</groupId>
             <artifactId>redis</artifactId>
             <scope>test</scope>
-            <version>1.19.3</version>
+            <version>1.19.7</version>
         </dependency>
         <!-- WireMock (standalone embutido para simular API externa de Distribution Centers) -->
         <dependency>
