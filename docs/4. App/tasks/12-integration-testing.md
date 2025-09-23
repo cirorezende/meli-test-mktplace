@@ -2,7 +2,13 @@
 
 ## 🚧 Status: EM PROGRESSO (Atualizado: 23/09/2025)
 
-Implementação iniciada. Primeiro fluxo end-to-end (criação + recuperação de pedido) validado com infraestrutura dinâmica via Testcontainers e WireMock básico.
+Incrementos concluídos até agora:
+
+1. Fluxo end-to-end criação + recuperação de pedido
+2. Validação de cache (hit na primeira chamada, miss na segunda) – WireMock verificado
+3. Publicação inicial de eventos (pipeline executa sem falhas; validação de consumo futura)
+
+Infraestrutura: Testcontainers (Postgres, Redis, Kafka) + WireMock configurados em `BaseIntegrationTest`.
 
 ## Objetivo
 
@@ -16,11 +22,11 @@ Criar testes que validem o comportamento completo do sistema com a API de CDs mo
 
 - [x] Mock server para API de CDs configurado (WireMock dinâmico por teste)
 - [x] Primeiro cenário de sucesso (criação + consulta de pedido)
-- [ ] Testes de múltiplos itens / seleção de CD
-- [ ] Testes de cenários de falha (timeout, 500, 404)
-- [x] Validação do comportamento do cache (hit/miss – primeiro caso implementado)
+- [ ] Testes de múltiplos itens / seleção de CD (próximo)
+- [ ] Testes de cenários de falha (timeout, 500, lista vazia)
+- [x] Validação do comportamento do cache (hit/miss inicial)
 - [ ] Testes de retry e circuit breaker
-- [x] Validação inicial de publicação de eventos (fluxo roda sem exceções) *(validação de consumo real pendente)*
+- [x] Validação inicial de publicação de eventos (fluxo roda sem exceções) *(consumo Kafka real pendente)*
 - [ ] Testes end-to-end completos (fluxos de erro e recuperação)
 
 ## Mock da API de CDs
@@ -124,11 +130,15 @@ Relatórios de cobertura continuam sendo gerados via JaCoCo (incluem ITs ao roda
 
 ## Próximos Passos Imediatos
 
-1. Adicionar stubs de falha (500, timeout, lista vazia) e asserts de fallback/resiliência
-2. Evoluir teste de eventos para consumo (adicionar consumer de teste real)
-3. Teste de múltiplos itens e seleção de CD mais próximo
-4. Introduzir testes de retry (falha temporária seguida de sucesso)
-5. Planejar implementação ou simulação de circuit breaker (caso ainda não exista configuração)
+Ordem sugerida (minimizando retrabalho):
+
+1. Teste múltiplos itens com seleção correta de CD (garante baseline antes de falhas)
+2. Cenários de falha WireMock: 500, timeout simulado (latência), lista vazia → asserts de fallback / resposta
+3. Implementar/verificar retry (config mínima + validar número de chamadas WireMock)
+4. Introduzir circuit breaker (se configurado via Resilience4j ou similar) e validar estados (open/half-open)
+5. Evoluir teste de eventos para consumo real (consumer Kafka de teste lendo tópico)
+6. Acrescentar teste de expiração de cache (usar TTL curto / manipular tempo se viável)
+7. Refinar utilitários de construção (builder de `OrderRequest`) para reduzir duplicação
 
 ## Observações
 

@@ -12,10 +12,6 @@ import org.springframework.retry.policy.SimpleRetryPolicy;
 import org.springframework.retry.support.RetryTemplate;
 import org.springframework.web.client.RestTemplate;
 
-import java.net.http.HttpClient;
-import java.time.Duration;
-import java.util.Collections;
-
 /**
  * Configuração do cliente HTTP - Http Client Config
  * 

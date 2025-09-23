@@ -99,7 +99,7 @@ Este plano de implementação detalha as tarefas necessárias para desenvolver o
 ### Fase 5: Deploy e Integração
 
 - ✅ **Tarefa 11** - Containerização (Concluída - 21/09/2025)
-- ⏳ **Tarefa 12** - Testes de Integração (Pendente)
+- 🚧 **Tarefa 12** - Testes de Integração (Em Progresso - 23/09/2025 / Fluxo básico, cache hit/miss e publicação inicial de evento validados)
 
 ## Tabela Consolidada de Status (Atualizado: 23/09/2025)
 
@@ -116,7 +116,7 @@ Este plano de implementação detalha as tarefas necessárias para desenvolver o
 | 09 | Testes Unitários | ✅ Concluída (c/ cobertura JaCoCo) | 23/09/2025 |
 | 10 | Observabilidade | 🚧 Em Progresso | 22/09/2025 |
 | 11 | Containerização | ✅ Concluída | 21/09/2025 |
-| 12 | Testes de Integração | 🚧 Em Progresso | 23/09/2025 |
+| 12 | Testes de Integração | 🚧 Em Progresso (fluxo básico, cache hit/miss, evento inicial) | 23/09/2025 |
 
 ### Próximas Entregas Prioritárias
 
@@ -127,7 +127,7 @@ Este plano de implementação detalha as tarefas necessárias para desenvolver o
 
 - Testes 100% passando com adoção de Testcontainers para configuração de banco.  
 - Cobertura de código integrada (JaCoCo 0.8.11) com threshold não bloqueante de 85% (INSTRUCTION).  
-- Iniciada Tarefa 12: primeiro fluxo E2E (criar + recuperar pedido) com WireMock + Containers (Postgres/Redis/Kafka).  
+- Tarefa 12 avançando: fluxo E2E (criar + recuperar pedido), teste de cache (hit/miss) e validação inicial de publicação de eventos implementados.  
 - Observabilidade parcialmente avançada: métricas de pedidos, cache e seleção de CD implementadas.  
 - Próximo incremento: instrumentar cliente HTTP externo (latência, status) + cenários de falha no WireMock.  
 - Planejado: validação de eventos Kafka e testes de cache (hit/miss) antes de circuit breaker.
@@ -149,7 +149,7 @@ Após completar todas as tarefas, o sistema estará pronto para:
 ✅ **Fase 2 - Core de Negócio**: 100% concluída (2/2 tarefas)  
 ✅ **Fase 3 - Adaptadores**: 100% concluída (3/3 tarefas)  
 ✅ **Fase 4 - Qualidade**: 50% concluída (1/2 tarefas)  
-✅ **Fase 5 - Deploy**: 50% concluída (1/2 tarefas)
+✅ **Fase 5 - Deploy**: 50% concluída (1/2 tarefas) *(T12 em andamento com 3 incrementos concluídos)*
 
 ### Estado Atual
 
