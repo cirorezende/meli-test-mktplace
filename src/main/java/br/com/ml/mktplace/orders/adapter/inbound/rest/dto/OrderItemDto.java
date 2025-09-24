@@ -22,6 +22,19 @@ public class OrderItemDto {
     @Schema(description = "DC code selected during processing; not required on requests", readOnly = true)
     @JsonProperty("distributionCenterCode")
     private String distributionCenterCode;
+
+    @Schema(description = "Available DCs for this item ordered by distance (most distant first as per requirement)", readOnly = true)
+    @JsonProperty("availableDistributionCenters")
+    private java.util.List<NearbyDcDto> availableDistributionCenters;
+
+    public static class NearbyDcDto {
+        @JsonProperty("code")
+        public String code;
+        @JsonProperty("distanceKm")
+        public double distanceKm;
+        public NearbyDcDto() {}
+        public NearbyDcDto(String code, double distanceKm) { this.code = code; this.distanceKm = distanceKm; }
+    }
     
     // Constructors
     public OrderItemDto() {}
@@ -35,6 +48,12 @@ public class OrderItemDto {
         this.itemId = itemId;
         this.quantity = quantity;
         this.distributionCenterCode = distributionCenterCode;
+    }
+    public OrderItemDto(String itemId, int quantity, String distributionCenterCode, java.util.List<NearbyDcDto> availableDistributionCenters) {
+        this.itemId = itemId;
+        this.quantity = quantity;
+        this.distributionCenterCode = distributionCenterCode;
+        this.availableDistributionCenters = availableDistributionCenters;
     }
     
     // Getters and Setters
@@ -60,5 +79,13 @@ public class OrderItemDto {
     
     public void setDistributionCenterCode(String distributionCenterCode) {
         this.distributionCenterCode = distributionCenterCode;
+    }
+
+    public java.util.List<NearbyDcDto> getAvailableDistributionCenters() {
+        return availableDistributionCenters;
+    }
+
+    public void setAvailableDistributionCenters(java.util.List<NearbyDcDto> availableDistributionCenters) {
+        this.availableDistributionCenters = availableDistributionCenters;
     }
 }

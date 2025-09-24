@@ -52,4 +52,24 @@ public interface JpaOrderEntityRepository extends JpaRepository<OrderEntity, Str
      */
     @Query("SELECT o FROM OrderEntity o WHERE o.status = :status")
     List<OrderEntity> findByStatus(@Param("status") String status);
+
+    /**
+     * Retorna códigos de CDs e distâncias (em km) para um conjunto de códigos dado,
+     * calculadas a partir de um ponto (latitude/longitude) usando PostGIS, ordenadas do mais próximo ao mais distante.
+     */
+    @Query(value = """
+        SELECT dc.code as code,
+               ST_DistanceSphere(
+                   dc.coordinates,
+                   ST_SetSRID(ST_MakePoint(:longitude, :latitude), 4326)
+               ) / 1000.0 as distance_km
+        FROM distribution_centers dc
+        WHERE dc.code = ANY(:codes)
+        ORDER BY distance_km ASC
+        """, nativeQuery = true)
+    List<Object[]> findDistancesForDcCodesOrdered(
+            @Param("latitude") double latitude,
+            @Param("longitude") double longitude,
+            @Param("codes") String[] codes
+    );
 }

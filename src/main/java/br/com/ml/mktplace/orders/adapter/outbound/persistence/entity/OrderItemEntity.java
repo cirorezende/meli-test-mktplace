@@ -1,6 +1,8 @@
 package br.com.ml.mktplace.orders.adapter.outbound.persistence.entity;
 
 import jakarta.persistence.*;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
 import java.time.Instant;
 import java.util.Objects;
@@ -33,6 +35,10 @@ public class OrderItemEntity {
 
     @Column(name = "assigned_distribution_center", length = 20)
     private String assignedDistributionCenter;
+
+    @JdbcTypeCode(SqlTypes.JSON)
+    @Column(name = "available_distribution_centers", columnDefinition = "jsonb")
+    private String availableDistributionCentersJson;
 
     @Column(name = "created_at", nullable = false, updatable = false)
     private Instant createdAt;
@@ -94,6 +100,14 @@ public class OrderItemEntity {
 
     public void setAssignedDistributionCenter(String assignedDistributionCenter) {
         this.assignedDistributionCenter = assignedDistributionCenter;
+    }
+
+    public String getAvailableDistributionCentersJson() {
+        return availableDistributionCentersJson;
+    }
+
+    public void setAvailableDistributionCentersJson(String availableDistributionCentersJson) {
+        this.availableDistributionCentersJson = availableDistributionCentersJson;
     }
 
     public Instant getCreatedAt() {

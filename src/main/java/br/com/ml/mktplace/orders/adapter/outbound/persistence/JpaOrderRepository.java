@@ -5,6 +5,7 @@ import br.com.ml.mktplace.orders.adapter.outbound.persistence.mapper.OrderEntity
 import br.com.ml.mktplace.orders.adapter.outbound.persistence.repository.JpaOrderEntityRepository;
 import br.com.ml.mktplace.orders.domain.model.Order;
 import br.com.ml.mktplace.orders.domain.model.OrderNotFoundException;
+import br.com.ml.mktplace.orders.domain.model.NearbyDistributionCenter;
 import br.com.ml.mktplace.orders.domain.port.OrderRepository;
 import org.springframework.stereotype.Component;
 
@@ -90,6 +91,19 @@ public class JpaOrderRepository implements OrderRepository {
         List<OrderEntity> entities = jpaRepository.findOrdersNearLocation(latitude, longitude, radiusMeters);
         return entities.stream()
                 .map(mapper::toDomain)
+                .toList();
+    }
+
+    /**
+     * Calcula e retorna a lista ordenada de centros de distribuição próximos
+     * para os códigos informados, considerando o ponto de entrega (lat/lng).
+     */
+    public List<NearbyDistributionCenter> findNearbyDistributionCentersOrdered(double latitude, double longitude, List<String> dcCodes) {
+        if (dcCodes == null || dcCodes.isEmpty()) return List.of();
+        String[] codes = dcCodes.toArray(new String[0]);
+        List<Object[]> rows = jpaRepository.findDistancesForDcCodesOrdered(latitude, longitude, codes);
+        return rows.stream()
+                .map(r -> new NearbyDistributionCenter((String) r[0], ((Number) r[1]).doubleValue()))
                 .toList();
     }
 }

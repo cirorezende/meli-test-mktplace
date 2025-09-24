@@ -77,11 +77,20 @@ public class OrderRestMapper {
      * Converts OrderItem domain object to OrderItemDto
      */
     private OrderItemDto toDto(OrderItem orderItem) {
-        // Distribution center will be populated during processing, initially null
+        String dcCode = orderItem.getAssignedDistributionCenter() != null
+                ? orderItem.getAssignedDistributionCenter().code()
+                : null;
+
+        // Mapear lista de CDs disponíveis mantendo a ordem do menos distante para o mais distante
+        java.util.List<OrderItemDto.NearbyDcDto> nearbyDtos = orderItem.getAvailableDistributionCenters().stream()
+                .map(n -> new OrderItemDto.NearbyDcDto(n.code(), n.distanceKm()))
+                .toList();
+
         return new OrderItemDto(
                 orderItem.getItemId(),
                 orderItem.getQuantity(),
-                null // distributionCenterCode populated during processing
+                dcCode,
+                nearbyDtos
         );
     }
     

@@ -6,6 +6,7 @@ import br.com.ml.mktplace.orders.domain.model.Address;
 import br.com.ml.mktplace.orders.domain.model.DistributionCenter;
 import br.com.ml.mktplace.orders.domain.model.Order;
 import br.com.ml.mktplace.orders.domain.model.OrderItem;
+import br.com.ml.mktplace.orders.domain.model.NearbyDistributionCenter;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -96,13 +97,30 @@ public class OrderEntityMapper {
         if (item.getAssignedDistributionCenter() != null) {
             assignedDCCode = item.getAssignedDistributionCenter().code();
         }
-        
-        return new OrderItemEntity(
+        OrderItemEntity entity = new OrderItemEntity(
             orderEntity,
             item.getItemId(),
             item.getQuantity(),
             assignedDCCode
         );
+        // Persistir lista ordenada de CDs disponíveis (se houver)
+        try {
+            if (!item.getAvailableDistributionCenters().isEmpty()) {
+                var arr = item.getAvailableDistributionCenters().stream()
+                        .map(n -> {
+                            com.fasterxml.jackson.databind.node.ObjectNode node = objectMapper.createObjectNode();
+                            node.put("code", n.code());
+                            node.put("distanceKm", n.distanceKm());
+                            return node;
+                        })
+                        .collect(java.util.stream.Collectors.toList());
+                String json = objectMapper.writeValueAsString(arr);
+                entity.setAvailableDistributionCentersJson(json);
+            }
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException("Failed to serialize availableDistributionCenters", e);
+        }
+        return entity;
     }
 
     /**
@@ -116,6 +134,23 @@ public class OrderEntityMapper {
         if (entity.getAssignedDistributionCenter() != null) {
             DistributionCenter dc = createMinimalDistributionCenter(entity.getAssignedDistributionCenter());
             item.assignDistributionCenter(dc);
+        }
+        // Carregar lista ordenada de CDs disponíveis (se houver)
+        try {
+            if (entity.getAvailableDistributionCentersJson() != null) {
+                var root = objectMapper.readTree(entity.getAvailableDistributionCentersJson());
+                if (root.isArray()) {
+                    java.util.List<NearbyDistributionCenter> list = new java.util.ArrayList<>();
+                    for (JsonNode n : root) {
+                        String code = n.get("code").asText();
+                        double dist = n.get("distanceKm").asDouble();
+                        list.add(new NearbyDistributionCenter(code, dist));
+                    }
+                    item.setAvailableDistributionCenters(list);
+                }
+            }
+        } catch (Exception e) {
+            // Não falhar carregamento do pedido por JSON malformado; seguir sem a lista
         }
         
         return item;

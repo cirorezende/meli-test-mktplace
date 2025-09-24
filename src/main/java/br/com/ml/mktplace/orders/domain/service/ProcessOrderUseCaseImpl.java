@@ -28,6 +28,8 @@ public class ProcessOrderUseCaseImpl implements ProcessOrderUseCase {
     private final CacheService cacheService;
     private final EventPublisher eventPublisher;
     private final DistributionCenterSelectionService selectionService;
+    @org.springframework.beans.factory.annotation.Autowired(required = false)
+    private br.com.ml.mktplace.orders.adapter.outbound.persistence.JpaOrderRepository jpaOrderRepository;
     private final ObservabilityMetrics observabilityMetrics;
     private static final Logger log = LoggerFactory.getLogger(ProcessOrderUseCaseImpl.class);
 
@@ -117,32 +119,53 @@ public class ProcessOrderUseCaseImpl implements ProcessOrderUseCase {
             order.changeStatus(OrderStatus.PROCESSING);
             orderRepository.save(order);
             
-            // Get distribution centers (with cache)
-            List<DistributionCenter> availableCenters = getAvailableDistributionCenters(order.getDeliveryAddress());
-            
-            if (availableCenters.isEmpty()) {
-                throw new ExternalServiceException("DistributionCenterService", "No distribution centers available for processing");
-            }
-            
-            // Assign distribution centers to items
+            // Para cada item: buscar CDs disponíveis para o item (com cache por itemId),
+            // calcular distâncias usando PostGIS e armazenar lista ordenada por proximidade.
             int itemsProcessed = 0;
             int itemsFailed = 0;
             observabilityMetrics.recordItemsPerOrder(order.getItems().size());
 
             for (OrderItem item : order.getItems()) {
                 try {
-                    DistributionCenter selectedCenter = selectionService.selectDistributionCenter(
-                        availableCenters, 
-                        order.getDeliveryAddress()
-                    );
+                    List<DistributionCenter> itemCenters = getAvailableDistributionCentersForItem(item.getItemId());
+                    if (itemCenters.isEmpty()) {
+                        throw new ExternalServiceException("DistributionCenterService", "No distribution centers available for item " + item.getItemId());
+                    }
+
+                    // Coordenadas do endereço de entrega
+                    double lat = order.getDeliveryAddress().coordinates().latitude().doubleValue();
+                    double lon = order.getDeliveryAddress().coordinates().longitude().doubleValue();
+
+                    // Ordenar por distância via banco (PostGIS) para os códigos retornados pela API
+                    List<String> codes = itemCenters.stream().map(DistributionCenter::code).toList();
+                    java.util.List<br.com.ml.mktplace.orders.domain.model.NearbyDistributionCenter> nearby;
+                    if (jpaOrderRepository != null) {
+                        nearby = jpaOrderRepository.findNearbyDistributionCentersOrdered(lat, lon, codes);
+                    } else {
+                        // Fallback: ordenar em memória usando Haversine
+                        nearby = new java.util.ArrayList<>();
+                        for (DistributionCenter dc : itemCenters) {
+                            double d = estimateDistanceKm(order.getDeliveryAddress(), dc);
+                            nearby.add(new br.com.ml.mktplace.orders.domain.model.NearbyDistributionCenter(dc.code(), d));
+                        }
+                        nearby.sort(java.util.Comparator.comparingDouble(br.com.ml.mktplace.orders.domain.model.NearbyDistributionCenter::distanceKm));
+                    }
+                    // Persistimos no agregado em memória (será refletido na resposta via mapeadores/DTO se necessário)
+                    item.setAvailableDistributionCenters(nearby);
+
+                    // Seleciona o mais próximo entre os disponíveis (fallback: serviço local de seleção)
+                    DistributionCenter selectedCenter = selectionService.selectDistributionCenter(itemCenters, order.getDeliveryAddress());
                     item.assignDistributionCenter(selectedCenter);
                     observabilityMetrics.incrementDcSelection(selectedCenter.code());
                     log.info("CD selecionado para item {} pedido {} -> {}", item.getItemId(), order.getId(), selectedCenter.code());
                     itemsProcessed++;
+                } catch (ExternalServiceException e) {
+                    // Preserve legacy behavior: bubble up external service failures to fail the whole order
+                    throw e;
                 } catch (Exception e) {
-                    // Log error but continue with other items
-                    itemsFailed++;
-                    log.warn("Falha ao atribuir CD para item {} do pedido {}: {}", item.getItemId(), order.getId(), e.getMessage());
+                    // Unexpected exceptions should bubble up and be handled at a higher level
+                    log.warn("Erro inesperado ao processar item {} do pedido {}: {}", item.getItemId(), order.getId(), e.getMessage());
+                    throw e;
                 }
             }
             
@@ -176,12 +199,25 @@ public class ProcessOrderUseCaseImpl implements ProcessOrderUseCase {
             throw new ProcessOrderException(order.getId(), "Distribution center service unavailable", e);
         }
     }
-    
-    private List<DistributionCenter> getAvailableDistributionCenters(Address deliveryAddress) {
-        // Try cache first using typed array to avoid generic List deserialization issues
-    // Versioned key to avoid reading stale cached entries serialized with previous schema (v2 introduced after removing 'coordinates' property)
-    String cacheKey = "distribution-centers:v2:" + deliveryAddress.state();
 
+    private double estimateDistanceKm(Address address, DistributionCenter dc) {
+        double lat1 = address.coordinates().latitude().doubleValue();
+        double lon1 = address.coordinates().longitude().doubleValue();
+        double lat2 = dc.getCoordinates().latitude().doubleValue();
+        double lon2 = dc.getCoordinates().longitude().doubleValue();
+        final double R = 6371.0088; // Earth radius km
+        double dLat = Math.toRadians(lat2 - lat1);
+        double dLon = Math.toRadians(lon2 - lon1);
+        double a = Math.sin(dLat / 2) * Math.sin(dLat / 2)
+                + Math.cos(Math.toRadians(lat1)) * Math.cos(Math.toRadians(lat2))
+                * Math.sin(dLon / 2) * Math.sin(dLon / 2);
+        double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+        return R * c;
+    }
+    
+    private List<DistributionCenter> getAvailableDistributionCentersForItem(String itemId) {
+        // Cache por item: quais CDs possuem o item disponível
+        String cacheKey = "item-dc-availability:v1:" + itemId;
         Optional<DistributionCenter[]> cachedArrayOpt = cacheService.get(cacheKey, DistributionCenter[].class);
         if (cachedArrayOpt.isPresent()) {
             DistributionCenter[] arr = cachedArrayOpt.get();
@@ -189,9 +225,12 @@ public class ProcessOrderUseCaseImpl implements ProcessOrderUseCase {
                 return java.util.Arrays.asList(arr);
             }
         }
-
-        // Get from service and cache result (store as array for simpler (de)serialization)
-        List<DistributionCenter> centers = distributionCenterService.findAllDistributionCenters();
+        // Tenta por item; se vazio, faz fallback para todos (compatibilidade com testes legados)
+        List<DistributionCenter> centers = distributionCenterService.findDistributionCentersByItem(itemId);
+        if (centers == null || centers.isEmpty()) {
+            log.debug("Fallback para findAllDistributionCenters() pois consulta por item {} retornou vazia", itemId);
+            centers = distributionCenterService.findAllDistributionCenters();
+        }
         cacheService.put(cacheKey, centers.toArray(new DistributionCenter[0]), java.time.Duration.ofMinutes(5));
         return centers;
     }

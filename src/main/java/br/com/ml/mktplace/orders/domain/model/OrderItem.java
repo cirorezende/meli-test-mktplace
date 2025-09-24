@@ -19,6 +19,8 @@ public class OrderItem {
     private final Integer quantity;
     
     private DistributionCenter assignedDistributionCenter;
+    // Lista de CDs disponíveis para este item ordenada por distância (mais próximo -> mais distante)
+    private java.util.List<NearbyDistributionCenter> availableDistributionCenters;
     
     public OrderItem(String itemId, Integer quantity) {
         this.itemId = Objects.requireNonNull(itemId, "Item ID cannot be null");
@@ -37,6 +39,13 @@ public class OrderItem {
             distributionCenter, 
             "Distribution center cannot be null"
         );
+    }
+
+    /**
+     * Define a lista de CDs disponíveis para este item, já ordenada pela distância.
+     */
+    public void setAvailableDistributionCenters(java.util.List<NearbyDistributionCenter> nearby) {
+        this.availableDistributionCenters = java.util.List.copyOf(Objects.requireNonNull(nearby));
     }
     
     /**
@@ -57,6 +66,10 @@ public class OrderItem {
     
     public DistributionCenter getAssignedDistributionCenter() {
         return assignedDistributionCenter;
+    }
+
+    public java.util.List<NearbyDistributionCenter> getAvailableDistributionCenters() {
+        return availableDistributionCenters == null ? java.util.List.of() : java.util.List.copyOf(availableDistributionCenters);
     }
     
     @Override
@@ -79,6 +92,7 @@ public class OrderItem {
                 "itemId='" + itemId + '\'' +
                 ", quantity=" + quantity +
                 ", assignedDistributionCenter=" + assignedDistributionCenter +
+                ", availableDistributionCenters=" + (availableDistributionCenters == null ? 0 : availableDistributionCenters.size()) +
                 '}';
     }
 }
