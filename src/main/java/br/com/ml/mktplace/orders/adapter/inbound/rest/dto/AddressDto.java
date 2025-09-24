@@ -16,6 +16,10 @@ public class AddressDto {
     @NotBlank(message = "Street is required")
     @JsonProperty("street")
     private String street;
+
+    @NotBlank(message = "Number is required")
+    @JsonProperty("number")
+    private String number;
     
     @NotBlank(message = "City is required")
     @JsonProperty("city")
@@ -35,16 +39,16 @@ public class AddressDto {
     private String zipCode;
     
     @Valid
-    @NotNull(message = "Coordinates are required")
     @JsonProperty("coordinates")
-    private CoordinatesDto coordinates;
+    private CoordinatesDto coordinates; // Optional on create; filled after geocoding
     
     // Constructors
     public AddressDto() {}
     
-    public AddressDto(String street, String city, String state, String country, 
+    public AddressDto(String street, String number, String city, String state, String country, 
                      String zipCode, CoordinatesDto coordinates) {
         this.street = street;
+        this.number = number;
         this.city = city;
         this.state = state;
         this.country = country;
@@ -64,6 +68,9 @@ public class AddressDto {
     public String getCity() {
         return city;
     }
+
+    public String getNumber() { return number; }
+    public void setNumber(String number) { this.number = number; }
     
     public void setCity(String city) {
         this.city = city;

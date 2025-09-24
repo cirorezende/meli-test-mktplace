@@ -164,7 +164,8 @@ public class OrderEntityMapper {
         // Create a minimal address for the DC (this is not ideal, but needed for reconstruction)
         Address minimalAddress = new Address(
             "Unknown",
-            "Unknown", 
+            "0",
+            "Unknown",
             "Unknown",
             "Unknown",
             "00000-000",
@@ -188,7 +189,8 @@ public class OrderEntityMapper {
         JsonNode node = objectMapper.readTree(json);
         
         String street = node.get("street").asText();
-        String city = node.get("city").asText();
+    String number = node.has("number") ? node.get("number").asText() : "0";
+    String city = node.get("city").asText();
         String state = node.get("state").asText();
         String country = node.get("country").asText();
         // O JSON armazenado pode ter sido gerado a partir do record Address cujo campo é 'zipCode'.
@@ -211,7 +213,7 @@ public class OrderEntityMapper {
             new BigDecimal(coordinatesNode.get("longitude").asText())
         );
         
-        return new Address(street, city, state, country, postalCode, coordinates);
+    return new Address(street, number, city, state, country, postalCode, coordinates);
     }
 
     /**

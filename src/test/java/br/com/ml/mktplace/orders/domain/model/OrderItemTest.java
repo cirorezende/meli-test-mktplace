@@ -15,7 +15,8 @@ class OrderItemTest {
         );
         
         var address = new Address(
-            "Rua da Consolação, 247",
+            "Rua da Consolação",
+            "247",
             "São Paulo",
             "SP",
             "Brazil",
@@ -106,7 +107,8 @@ class OrderItemTest {
             new BigDecimal("-43.1729")
         );
         var address2 = new Address(
-            "Rua das Flores, 123",
+            "Rua das Flores",
+            "123",
             "Rio de Janeiro",
             "RJ",
             "Brazil",

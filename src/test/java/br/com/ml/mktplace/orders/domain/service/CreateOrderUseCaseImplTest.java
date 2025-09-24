@@ -43,6 +43,7 @@ class CreateOrderUseCaseImplTest {
         
         validAddress = new Address(
             "123 Main St",
+            "1",
             "Springfield",
             "IL",
             "USA", 

@@ -59,11 +59,12 @@ public class ApplicationConfig {
      */
     @Bean
     public ProcessOrderUseCase processOrderUseCase(
-            OrderRepository orderRepository,
-            DistributionCenterService distributionCenterService,
-            CacheService cacheService,
-            EventPublisher eventPublisher,
+        OrderRepository orderRepository,
+        DistributionCenterService distributionCenterService,
+        CacheService cacheService,
+        EventPublisher eventPublisher,
         DistributionCenterSelectionService distributionCenterSelectionService,
+        br.com.ml.mktplace.orders.domain.port.GeocodingService geocodingService,
         ObservabilityMetrics observabilityMetrics) {
         
         return new ProcessOrderUseCaseImpl(
@@ -72,6 +73,7 @@ public class ApplicationConfig {
             cacheService,
             eventPublisher,
             distributionCenterSelectionService,
+            geocodingService,
             observabilityMetrics
         );
     }

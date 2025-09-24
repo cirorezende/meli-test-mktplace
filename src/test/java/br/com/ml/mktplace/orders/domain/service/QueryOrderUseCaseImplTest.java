@@ -38,6 +38,7 @@ class QueryOrderUseCaseImplTest {
         
         Address address1 = new Address(
             "123 Main St",
+            "1",
             "Springfield",
             "IL",
             "USA",
@@ -50,6 +51,7 @@ class QueryOrderUseCaseImplTest {
         
         Address address2 = new Address(
             "456 Oak Ave",
+            "10",
             "Chicago",
             "IL",
             "USA",

@@ -28,13 +28,19 @@ public class OrderRequest {
     @Valid
     @JsonProperty("items")
     private List<OrderItemDto> items;
+
+    @Schema(description = "Delivery address for the order (coordinates optional; will be resolved via geocoding)")
+    @Valid
+    @JsonProperty("deliveryAddress")
+    private AddressDto deliveryAddress;
     
     // Constructors
     public OrderRequest() {}
     
-    public OrderRequest(String customerId, List<OrderItemDto> items) {
+    public OrderRequest(String customerId, List<OrderItemDto> items, AddressDto deliveryAddress) {
         this.customerId = customerId;
         this.items = items;
+        this.deliveryAddress = deliveryAddress;
     }
     
     // Getters and Setters
@@ -53,4 +59,7 @@ public class OrderRequest {
     public void setItems(List<OrderItemDto> items) {
         this.items = items;
     }
+
+    public AddressDto getDeliveryAddress() { return deliveryAddress; }
+    public void setDeliveryAddress(AddressDto deliveryAddress) { this.deliveryAddress = deliveryAddress; }
 }

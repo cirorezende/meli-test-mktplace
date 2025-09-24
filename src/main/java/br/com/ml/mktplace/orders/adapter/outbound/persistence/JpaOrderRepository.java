@@ -137,12 +137,12 @@ public class JpaOrderRepository implements OrderRepository {
                         java.math.BigDecimal.valueOf(latitude),
                         java.math.BigDecimal.valueOf(longitude)
                 );
-                Address addr = new Address(street, city, state, country, postal, coords);
+                Address addr = new Address(street, "0", city, state, country, postal, coords);
                 return new DistributionCenter(code, name, addr);
             } catch (Exception e) {
                 // Fallback mínimo em caso de JSON inesperado
-                Address addr = new Address("Unknown", "Unknown", "Unknown", "Unknown", "00000-000",
-                        new Address.Coordinates(java.math.BigDecimal.valueOf(latitude), java.math.BigDecimal.valueOf(longitude)));
+        Address addr = new Address("Unknown", "0", "Unknown", "Unknown", "Unknown", "00000-000",
+            new Address.Coordinates(java.math.BigDecimal.valueOf(latitude), java.math.BigDecimal.valueOf(longitude)));
                 return new DistributionCenter(code, name, addr);
             }
         }).toList();

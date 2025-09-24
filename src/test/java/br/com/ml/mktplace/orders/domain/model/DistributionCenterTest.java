@@ -15,7 +15,8 @@ class DistributionCenterTest {
         );
         
         return new Address(
-            "Rua da Consolação, 247",
+            "Rua da Consolação",
+            "247",
             "São Paulo",
             "SP",
             "Brazil",
@@ -77,7 +78,8 @@ class DistributionCenterTest {
             new BigDecimal("-46.6333")
         );
         var address = new Address(
-            "Rua da Consolação, 247",
+            "Rua da Consolação",
+            "247",
             "São Paulo",
             "SP",
             "Brazil",

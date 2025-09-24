@@ -21,28 +21,31 @@ public class OrderRestMapper {
     /**
      * Converts OrderRequest DTO to Order domain object
      */
-    public Order toDomain(OrderRequest request, String orderId) {
-        List<OrderItem> orderItems = request.getItems().stream()
-                .map(this::toDomain)
-                .collect(Collectors.toList());
+        public Order toDomain(OrderRequest request, String orderId) {
+                List<OrderItem> orderItems = request.getItems().stream()
+                                .map(this::toDomain)
+                                .collect(Collectors.toList());
 
-        // Since delivery address is no longer provided in the request, we create
-        // a temporary placeholder address. The real address should be resolved
-        // later during processing (e.g., from customer profile or another service).
-        Address placeholderAddress = new Address(
-                "TBD Street",
-                "TBD City",
-                "TBD",
-                "TBD",
-                "00000-000",
-                new Address.Coordinates(
-                        java.math.BigDecimal.ZERO,
-                        java.math.BigDecimal.ZERO
-                )
-        );
-
-        return new Order(request.getCustomerId(), orderItems, placeholderAddress);
-    }
+                if (request.getDeliveryAddress() == null) {
+                        throw new IllegalArgumentException("deliveryAddress is required");
+                }
+                AddressDto addr = request.getDeliveryAddress();
+                Address address;
+                if (addr.getCoordinates() != null) {
+                        address = toDomain(addr);
+                } else {
+                        address = new Address(
+                                        addr.getStreet(),
+                                        addr.getNumber(),
+                                        addr.getCity(),
+                                        addr.getState(),
+                                        addr.getCountry(),
+                                        addr.getZipCode(),
+                                        new Address.Coordinates(java.math.BigDecimal.ZERO, java.math.BigDecimal.ZERO)
+                        );
+                }
+                return new Order(request.getCustomerId(), orderItems, address);
+        }
     
     /**
      * Converts Order domain object to OrderResponse DTO
@@ -89,37 +92,21 @@ public class OrderRestMapper {
      * Converts AddressDto to Address domain object
      */
     private Address toDomain(AddressDto dto) {
-        Address.Coordinates coordinates = new Address.Coordinates(
-                dto.getCoordinates().getLatitude(),
-                dto.getCoordinates().getLongitude()
-        );
-        
-        return new Address(
-                dto.getStreet(),
-                dto.getCity(),
-                dto.getState(),
-                dto.getCountry(),
-                dto.getZipCode(),
-                coordinates
-        );
+        if (dto.getCoordinates() == null) {
+            throw new IllegalArgumentException("Coordinates missing when attempting domain conversion (should be set at this stage)");
+        }
+        Address.Coordinates coordinates = new Address.Coordinates(dto.getCoordinates().getLatitude(), dto.getCoordinates().getLongitude());
+        return new Address(dto.getStreet(), dto.getNumber(), dto.getCity(), dto.getState(), dto.getCountry(), dto.getZipCode(), coordinates);
     }
     
     /**
      * Converts Address domain object to AddressDto
      */
-    private AddressDto toDto(Address address) {
-        AddressDto.CoordinatesDto coordinatesDto = new AddressDto.CoordinatesDto(
-                address.coordinates().latitude(),
-                address.coordinates().longitude()
-        );
-        
-        return new AddressDto(
-                address.street(),
-                address.city(),
-                address.state(),
-                address.country(),
-                address.zipCode(),
-                coordinatesDto
-        );
-    }
+        private AddressDto toDto(Address address) {
+                AddressDto.CoordinatesDto coordinatesDto = new AddressDto.CoordinatesDto(
+                                address.coordinates().latitude(),
+                                address.coordinates().longitude()
+                );
+                return new AddressDto(address.street(), address.number(), address.city(), address.state(), address.country(), address.zipCode(), coordinatesDto);
+        }
 }

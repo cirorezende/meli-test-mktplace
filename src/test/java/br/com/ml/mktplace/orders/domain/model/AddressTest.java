@@ -18,7 +18,8 @@ class AddressTest {
         
         // When
         var address = new Address(
-            "Rua da Consolação, 247",
+            "Rua da Consolação",
+            "247",
             "São Paulo",
             "SP",
             "Brazil",
@@ -28,7 +29,8 @@ class AddressTest {
         
         // Then
         assertNotNull(address);
-        assertEquals("Rua da Consolação, 247", address.street());
+    assertEquals("Rua da Consolação", address.street());
+    assertEquals("247", address.number());
         assertEquals("São Paulo", address.city());
         assertEquals("SP", address.state());
         assertEquals("Brazil", address.country());
@@ -46,7 +48,7 @@ class AddressTest {
         
         // When & Then
         assertThrows(NullPointerException.class, () ->
-            new Address(null, "São Paulo", "SP", "Brazil", "01301-000", coordinates)
+            new Address(null, "247", "São Paulo", "SP", "Brazil", "01301-000", coordinates)
         );
     }
 
@@ -60,7 +62,7 @@ class AddressTest {
         
         // When & Then
         assertThrows(NullPointerException.class, () ->
-            new Address("Rua da Consolação, 247", null, "SP", "Brazil", "01301-000", coordinates)
+            new Address("Rua da Consolação", "247", null, "SP", "Brazil", "01301-000", coordinates)
         );
     }
 
@@ -74,7 +76,7 @@ class AddressTest {
         
         // When & Then
         assertThrows(NullPointerException.class, () ->
-            new Address("Rua da Consolação, 247", "São Paulo", null, "Brazil", "01301-000", coordinates)
+            new Address("Rua da Consolação", "247", "São Paulo", null, "Brazil", "01301-000", coordinates)
         );
     }
 
@@ -88,7 +90,7 @@ class AddressTest {
         
         // When & Then
         assertThrows(NullPointerException.class, () ->
-            new Address("Rua da Consolação, 247", "São Paulo", "SP", null, "01301-000", coordinates)
+            new Address("Rua da Consolação", "247", "São Paulo", "SP", null, "01301-000", coordinates)
         );
     }
 
@@ -102,7 +104,18 @@ class AddressTest {
         
         // When & Then
         assertThrows(NullPointerException.class, () ->
-            new Address("Rua da Consolação, 247", "São Paulo", "SP", "Brazil", null, coordinates)
+            new Address("Rua da Consolação", "247", "São Paulo", "SP", "Brazil", null, coordinates)
+        );
+    }
+
+    @Test
+    void shouldThrowExceptionWhenNumberIsNull() {
+        var coordinates = new Address.Coordinates(
+            new BigDecimal("-23.5505"),
+            new BigDecimal("-46.6333")
+        );
+        assertThrows(NullPointerException.class, () ->
+            new Address("Rua da Consolação", null, "São Paulo", "SP", "Brazil", "01301-000", coordinates)
         );
     }
 
@@ -110,7 +123,7 @@ class AddressTest {
     void shouldThrowExceptionWhenCoordinatesIsNull() {
         // When & Then
         assertThrows(NullPointerException.class, () ->
-            new Address("Rua da Consolação, 247", "São Paulo", "SP", "Brazil", "01301-000", null)
+            new Address("Rua da Consolação", "247", "São Paulo", "SP", "Brazil", "01301-000", null)
         );
     }
 

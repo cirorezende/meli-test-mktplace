@@ -13,6 +13,9 @@ import java.util.Objects;
 public record Address(
         @NotBlank(message = "Street is required")
         String street,
+
+    @NotBlank(message = "Number is required")
+    String number,
         
         @NotBlank(message = "City is required") 
         String city,
@@ -33,6 +36,7 @@ public record Address(
     
     public Address {
         Objects.requireNonNull(street, "Street cannot be null");
+        Objects.requireNonNull(number, "Number cannot be null");
         Objects.requireNonNull(city, "City cannot be null");
         Objects.requireNonNull(state, "State cannot be null");
         Objects.requireNonNull(country, "Country cannot be null");

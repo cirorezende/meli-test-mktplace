@@ -48,6 +48,9 @@ class ApplicationConfigTest {
     
     @Mock
     private br.com.ml.mktplace.orders.adapter.config.metrics.ObservabilityMetrics mockObservabilityMetrics;
+
+    @Mock
+    private br.com.ml.mktplace.orders.domain.port.GeocodingService mockGeocodingService;
     
     private ApplicationConfig applicationConfig;
 
@@ -85,6 +88,7 @@ class ApplicationConfigTest {
             mockCacheService,
             mockEventPublisher,
             mockSelectionService,
+            mockGeocodingService,
             mockObservabilityMetrics
         );
         
@@ -168,7 +172,7 @@ class ApplicationConfigTest {
         assertNotNull(queryUseCase);
         
         ProcessOrderUseCase processUseCase = applicationConfig.processOrderUseCase(
-            null, null, null, null, null, null
+            null, null, null, null, null, null, null
         );
         assertNotNull(processUseCase);
     }
@@ -187,7 +191,7 @@ class ApplicationConfigTest {
         
         ProcessOrderUseCase processUseCase = applicationConfig.processOrderUseCase(
             mockOrderRepository, mockDistributionCenterService, 
-            mockCacheService, mockEventPublisher, selectionService, mockObservabilityMetrics
+            mockCacheService, mockEventPublisher, selectionService, mockGeocodingService, mockObservabilityMetrics
         );
         
         QueryOrderUseCase queryUseCase = applicationConfig.queryOrderUseCase(

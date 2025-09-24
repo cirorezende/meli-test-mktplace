@@ -20,7 +20,8 @@ class CreateOrderUseCaseTest {
         );
         
         return new Address(
-            "Rua da Consolação, 247",
+            "Rua da Consolação",
+            "247",
             "São Paulo",
             "SP",
             "Brazil",

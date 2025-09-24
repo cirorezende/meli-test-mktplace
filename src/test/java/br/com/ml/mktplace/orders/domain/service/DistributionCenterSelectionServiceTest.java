@@ -29,6 +29,7 @@ class DistributionCenterSelectionServiceTest {
         // Delivery address in Springfield, IL
         deliveryAddress = new Address(
             "123 Main St",
+            "1",
             "Springfield",
             "IL",
             "USA",
@@ -45,6 +46,7 @@ class DistributionCenterSelectionServiceTest {
             "Close Distribution Center",
             new Address(
                 "456 Warehouse Ave",
+                "10",
                 "Springfield",
                 "IL",
                 "USA",
@@ -62,6 +64,7 @@ class DistributionCenterSelectionServiceTest {
             "Medium Distribution Center",
             new Address(
                 "789 Distribution Blvd",
+                "100",
                 "Chicago",
                 "IL",
                 "USA",
@@ -79,6 +82,7 @@ class DistributionCenterSelectionServiceTest {
             "Far Distribution Center",
             new Address(
                 "321 Logistics Way",
+                "5000",
                 "Los Angeles",
                 "CA",
                 "USA",
@@ -207,6 +211,7 @@ class DistributionCenterSelectionServiceTest {
         // Given - addresses at extreme coordinates
         Address northPole = new Address(
             "North Pole",
+            "1",
             "Arctic",
             "Arctic",
             "NORTH",
@@ -219,6 +224,7 @@ class DistributionCenterSelectionServiceTest {
         
         Address southPole = new Address(
             "South Pole",
+            "1",
             "Antarctic",
             "Antarctic", 
             "SOUTH",
@@ -247,6 +253,7 @@ class DistributionCenterSelectionServiceTest {
         // Given - addresses that cross international date line
         Address eastOfDateLine = new Address(
             "East of Date Line",
+            "1",
             "Fiji",
             "Pacific",
             "FIJI",
@@ -259,6 +266,7 @@ class DistributionCenterSelectionServiceTest {
         
         Address westOfDateLine = new Address(
             "West of Date Line",
+            "1",
             "Samoa",
             "Pacific",
             "SAMOA", 
@@ -304,6 +312,7 @@ class DistributionCenterSelectionServiceTest {
             "Micro Close 1",
             new Address(
                 "100 Main St",
+                "100",
                 "Springfield",
                 "IL",
                 "USA",
@@ -320,6 +329,7 @@ class DistributionCenterSelectionServiceTest {
             "Micro Close 2",
             new Address(
                 "101 Main St", 
+                "101",
                 "Springfield",
                 "IL",
                 "USA",

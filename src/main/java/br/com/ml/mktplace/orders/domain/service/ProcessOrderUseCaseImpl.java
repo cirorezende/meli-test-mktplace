@@ -7,6 +7,7 @@ import br.com.ml.mktplace.orders.domain.port.OrderRepository;
 import br.com.ml.mktplace.orders.domain.port.DistributionCenterService;
 import br.com.ml.mktplace.orders.domain.port.CacheService;
 import br.com.ml.mktplace.orders.domain.port.EventPublisher;
+import br.com.ml.mktplace.orders.domain.port.GeocodingService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -28,6 +29,7 @@ public class ProcessOrderUseCaseImpl implements ProcessOrderUseCase {
     private final CacheService cacheService;
     private final EventPublisher eventPublisher;
     private final DistributionCenterSelectionService selectionService;
+    private final GeocodingService geocodingService;
     @org.springframework.beans.factory.annotation.Autowired(required = false)
     private br.com.ml.mktplace.orders.adapter.outbound.persistence.JpaOrderRepository jpaOrderRepository;
     private final ObservabilityMetrics observabilityMetrics;
@@ -39,12 +41,14 @@ public class ProcessOrderUseCaseImpl implements ProcessOrderUseCase {
             CacheService cacheService,
             EventPublisher eventPublisher,
             DistributionCenterSelectionService selectionService,
+            GeocodingService geocodingService,
             ObservabilityMetrics observabilityMetrics) {
         this.orderRepository = orderRepository;
         this.distributionCenterService = distributionCenterService;
         this.cacheService = cacheService;
         this.eventPublisher = eventPublisher;
         this.selectionService = selectionService;
+        this.geocodingService = geocodingService;
         this.observabilityMetrics = observabilityMetrics;
     }
 
@@ -115,6 +119,30 @@ public class ProcessOrderUseCaseImpl implements ProcessOrderUseCase {
     
     private Order performOrderProcessing(Order order) {
         try {
+            // Resolve geocoding if needed (coordinates zero -> attempt fetch)
+            if (needsGeocoding(order.getDeliveryAddress())) {
+                var coords = geocodingService.geocode(
+                        order.getDeliveryAddress().street(),
+                        order.getDeliveryAddress().number(),
+                        order.getDeliveryAddress().city(),
+                        order.getDeliveryAddress().state(),
+                        order.getDeliveryAddress().country(),
+                        order.getDeliveryAddress().zipCode()
+                );
+                if (coords != null) {
+                    // Create new order instance with enriched address (immutable pattern)
+                    order = rebuildOrderWithAddress(order, new Address(
+                            order.getDeliveryAddress().street(),
+                            order.getDeliveryAddress().number(),
+                            order.getDeliveryAddress().city(),
+                            order.getDeliveryAddress().state(),
+                            order.getDeliveryAddress().country(),
+                            order.getDeliveryAddress().zipCode(),
+                            coords
+                    ));
+                }
+            }
+
             // Change status to processing
             order.changeStatus(OrderStatus.PROCESSING);
             orderRepository.save(order);
@@ -200,6 +228,22 @@ public class ProcessOrderUseCaseImpl implements ProcessOrderUseCase {
         }
     }
 
+    private boolean needsGeocoding(Address address) {
+        return address.coordinates().latitude().compareTo(java.math.BigDecimal.ZERO) == 0 &&
+               address.coordinates().longitude().compareTo(java.math.BigDecimal.ZERO) == 0;
+    }
+
+    private Order rebuildOrderWithAddress(Order original, Address newAddress) {
+        return new Order(
+                original.getId(),
+                original.getCustomerId(),
+                original.getItems(),
+                newAddress,
+                original.getStatus(),
+                original.getCreatedAt()
+        );
+    }
+
     private double estimateDistanceKm(Address address, DistributionCenter dc) {
         double lat1 = address.coordinates().latitude().doubleValue();
         double lon1 = address.coordinates().longitude().doubleValue();
@@ -237,10 +281,10 @@ public class ProcessOrderUseCaseImpl implements ProcessOrderUseCase {
         // Fallback: materializa mínimos se repositório JPA não disponível (ex.: testes unitários puros)
         java.util.List<DistributionCenter> minimal = new java.util.ArrayList<>();
         for (String code : codes) {
-            Address placeholder = new Address(
-                    "Unknown", "Unknown", "Unknown", "Unknown", "00000-000",
-                    new Address.Coordinates(java.math.BigDecimal.ZERO, java.math.BigDecimal.ZERO)
-            );
+        Address placeholder = new Address(
+            "Unknown", "0", "Unknown", "Unknown", "Unknown", "00000-000",
+            new Address.Coordinates(java.math.BigDecimal.ZERO, java.math.BigDecimal.ZERO)
+        );
             minimal.add(new DistributionCenter(code, "DC " + code, placeholder));
         }
         return minimal;

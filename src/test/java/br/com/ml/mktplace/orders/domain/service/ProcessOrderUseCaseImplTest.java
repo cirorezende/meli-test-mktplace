@@ -40,6 +40,9 @@ class ProcessOrderUseCaseImplTest {
     
     @Mock
     private DistributionCenterSelectionService selectionService;
+
+    @Mock
+    private GeocodingService geocodingService;
     
     @Mock
     private br.com.ml.mktplace.orders.adapter.outbound.persistence.JpaOrderRepository jpaOrderRepository;
@@ -57,14 +60,15 @@ class ProcessOrderUseCaseImplTest {
         // Real metrics registry (in-memory, no side effects)
         observabilityMetrics = new ObservabilityMetrics(new SimpleMeterRegistry());
         
-        useCase = new ProcessOrderUseCaseImpl(
-                orderRepository,
-                distributionCenterService,
-                cacheService,
-                eventPublisher,
-                selectionService,
-                observabilityMetrics
-        );
+    useCase = new ProcessOrderUseCaseImpl(
+        orderRepository,
+        distributionCenterService,
+        cacheService,
+        eventPublisher,
+        selectionService,
+        geocodingService,
+        observabilityMetrics
+    );
         // Inject optional JPA repository to enable local enrichment in tests
         try {
             java.lang.reflect.Field f = ProcessOrderUseCaseImpl.class.getDeclaredField("jpaOrderRepository");
@@ -77,6 +81,7 @@ class ProcessOrderUseCaseImplTest {
         // Create test data
         Address address = new Address(
             "123 Main St",
+            "1",
             "Springfield", 
             "IL",
             "USA",
@@ -104,6 +109,7 @@ class ProcessOrderUseCaseImplTest {
             "Main Distribution Center",
             new Address(
                 "456 Warehouse Ave",
+                "10",
                 "Springfield",
                 "IL", 
                 "USA",
@@ -151,6 +157,128 @@ class ProcessOrderUseCaseImplTest {
         verify(cacheService).put(any(String.class), any(String[].class), eq(Duration.ofMinutes(5)));
         verify(selectionService).selectDistributionCenter(availableCenters, validOrder.getDeliveryAddress());
         verify(eventPublisher).publishOrderProcessed(result);
+    }
+
+    @Test
+    @DisplayName("Should enrich address coordinates when geocoding succeeds for zero coords")
+    void shouldEnrichAddressWhenGeocodingSucceeds() {
+        // Given order with zero coordinates
+        Address zeroAddress = new Address(
+            "Geo St",
+            "5",
+            "GeoCity",
+            "GC",
+            "BR",
+            "00000-000",
+            new Address.Coordinates(BigDecimal.ZERO, BigDecimal.ZERO)
+        );
+        Order zeroOrder = new Order(
+            "ORDER-GEO",
+            "CUSTOMER-XYZ",
+            validOrder.getItems(),
+            zeroAddress,
+            OrderStatus.RECEIVED,
+            Instant.now()
+        );
+        when(orderRepository.findById("ORDER-GEO")).thenReturn(Optional.of(zeroOrder));
+        when(geocodingService.geocode(anyString(), anyString(), anyString(), anyString(), anyString(), anyString()))
+            .thenReturn(new Address.Coordinates(BigDecimal.valueOf(1.2345), BigDecimal.valueOf(-9.8765)));
+        when(cacheService.get(any(String.class), eq(String[].class))).thenReturn(Optional.empty());
+        when(distributionCenterService.findDistributionCentersByItem(anyString())).thenReturn(List.of("DC-001"));
+        when(jpaOrderRepository.findDistributionCentersByCodes(anyList())).thenReturn(availableCenters);
+        when(jpaOrderRepository.findNearbyDistributionCentersOrdered(anyDouble(), anyDouble(), anyList()))
+            .thenReturn(List.of(new NearbyDistributionCenter("DC-001", 1.0)));
+        when(selectionService.selectDistributionCenter(eq(availableCenters), any(Address.class)))
+            .thenReturn(selectedCenter);
+        when(orderRepository.save(any(Order.class)))
+            .thenAnswer(invocation -> invocation.getArgument(0));
+
+        // When
+        Order result = useCase.processOrder("ORDER-GEO");
+
+        // Then
+        assertThat(result.getDeliveryAddress().coordinates().latitude()).isEqualTo(BigDecimal.valueOf(1.2345));
+        assertThat(result.getDeliveryAddress().coordinates().longitude()).isEqualTo(BigDecimal.valueOf(-9.8765));
+        verify(geocodingService).geocode(anyString(), anyString(), anyString(), anyString(), anyString(), anyString());
+    }
+
+    @Test
+    @DisplayName("Should keep zero coordinates when geocoding returns null")
+    void shouldKeepZeroCoordinatesWhenGeocodingReturnsNull() {
+        Address zeroAddress = new Address(
+            "Geo St",
+            "5",
+            "GeoCity",
+            "GC",
+            "BR",
+            "00000-000",
+            new Address.Coordinates(BigDecimal.ZERO, BigDecimal.ZERO)
+        );
+        Order zeroOrder = new Order(
+            "ORDER-GEO-NULL",
+            "CUSTOMER-XYZ",
+            validOrder.getItems(),
+            zeroAddress,
+            OrderStatus.RECEIVED,
+            Instant.now()
+        );
+        when(orderRepository.findById("ORDER-GEO-NULL")).thenReturn(Optional.of(zeroOrder));
+        when(geocodingService.geocode(anyString(), anyString(), anyString(), anyString(), anyString(), anyString()))
+            .thenReturn(null);
+        when(cacheService.get(any(String.class), eq(String[].class))).thenReturn(Optional.empty());
+        when(distributionCenterService.findDistributionCentersByItem(anyString())).thenReturn(List.of("DC-001"));
+        when(jpaOrderRepository.findDistributionCentersByCodes(anyList())).thenReturn(availableCenters);
+        when(jpaOrderRepository.findNearbyDistributionCentersOrdered(anyDouble(), anyDouble(), anyList()))
+            .thenReturn(List.of(new NearbyDistributionCenter("DC-001", 1.0)));
+        when(selectionService.selectDistributionCenter(eq(availableCenters), any(Address.class)))
+            .thenReturn(selectedCenter);
+        when(orderRepository.save(any(Order.class)))
+            .thenAnswer(invocation -> invocation.getArgument(0));
+
+        Order result = useCase.processOrder("ORDER-GEO-NULL");
+        assertThat(result.getDeliveryAddress().coordinates().latitude()).isEqualTo(BigDecimal.ZERO);
+        assertThat(result.getDeliveryAddress().coordinates().longitude()).isEqualTo(BigDecimal.ZERO);
+        verify(geocodingService).geocode(anyString(), anyString(), anyString(), anyString(), anyString(), anyString());
+    }
+
+    @Test
+    @DisplayName("Should continue processing when geocoding throws exception and keep zero coords")
+    void shouldContinueWhenGeocodingThrowsException() {
+        Address zeroAddress = new Address(
+            "Geo St",
+            "5",
+            "GeoCity",
+            "GC",
+            "BR",
+            "00000-000",
+            new Address.Coordinates(BigDecimal.ZERO, BigDecimal.ZERO)
+        );
+        Order zeroOrder = new Order(
+            "ORDER-GEO-ERR",
+            "CUSTOMER-XYZ",
+            validOrder.getItems(),
+            zeroAddress,
+            OrderStatus.RECEIVED,
+            Instant.now()
+        );
+            // Minimal stubbing only for mandatory interactions before failure cascade
+            when(orderRepository.findById("ORDER-GEO-ERR")).thenReturn(Optional.of(zeroOrder));
+            when(geocodingService.geocode(anyString(), anyString(), anyString(), anyString(), anyString(), anyString()))
+                .thenThrow(new RuntimeException("geo boom"));
+
+        // When / Then
+        assertThatThrownBy(() -> useCase.processOrder("ORDER-GEO-ERR"))
+            .isInstanceOf(ProcessOrderUseCase.ProcessOrderException.class)
+            .hasMessageContaining("Unexpected error during processing");
+        // we still invoked geocoding
+            // we invoked geocoding attempt
+            verify(geocodingService).geocode(anyString(), anyString(), anyString(), anyString(), anyString(), anyString());
+            // No unintended downstream calls after early geocoding failure
+            verifyNoInteractions(distributionCenterService, selectionService, jpaOrderRepository, cacheService);
+            // No order persistence after failure prior to status change
+            verify(orderRepository, never()).save(any(Order.class));
+            // Failure event published
+            verify(eventPublisher).publishOrderFailed(eq(zeroOrder), eq("Unexpected error during processing"), any(RuntimeException.class));
     }
     
     @Test

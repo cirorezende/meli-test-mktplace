@@ -20,7 +20,8 @@ class OrderTest {
         );
         
         return new Address(
-            "Rua da Consolação, 247",
+            "Rua da Consolação",
+            "247",
             "São Paulo",
             "SP",
             "Brazil",
@@ -44,7 +45,8 @@ class OrderTest {
         );
         
         var address = new Address(
-            "Rua da Consolação, 247",
+            "Rua da Consolação",
+            "247",
             "São Paulo",
             "SP",
             "Brazil",
