@@ -1,3 +1,4 @@
 target/*
 logs/*
 logs/application.log
+docker-compose copy.yml
