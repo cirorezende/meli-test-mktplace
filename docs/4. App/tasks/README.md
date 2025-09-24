@@ -70,7 +70,7 @@ Este plano de implementação detalha as tarefas necessárias para desenvolver o
 - [x] **Configuração completa por ambiente** *(ApplicationConfig, DatabaseConfig, CacheConfig, HttpClientConfig, KafkaConfig)*
 - [x] **Sistema conteinerizado e funcional** *(Docker + docker-compose com 8 serviços)*
 - 🚧 Observabilidade completa implementada *(dashboards + métricas externas pendentes)*
-- 🚧 Testes de integração em andamento *(primeiro fluxo E2E validado)*
+- [x] Testes de integração concluídos *(fluxo E2E assíncrono validado)*
 
 ## Status das Tarefas
 
@@ -138,6 +138,8 @@ Este plano de implementação detalha as tarefas necessárias para desenvolver o
   
 - Observabilidade parcialmente avançada: métricas de pedidos, cache e seleção de CD implementadas.  
 - Próximo incremento: instrumentar cliente HTTP externo (latência, status) + cenários de falha no WireMock.
+  
+Atualização (23/09/2025): Corrigido status consolidado para 11/12 concluídas (T10 em progresso) e marcado critérios de sucesso dos testes de integração como concluídos.
 
 ## Próximos Passos
 
@@ -150,7 +152,7 @@ Após completar todas as tarefas, o sistema estará pronto para:
 
 ## 📊 Resumo do Progresso
 
-### Tarefas Concluídas: 12/12 (100%)
+### Tarefas Concluídas: 11/12 (~92%)
 
 ✅ **Fase 1 - Fundação**: 100% concluída (3/3 tarefas)  
 ✅ **Fase 2 - Core de Negócio**: 100% concluída (2/2 tarefas)  
