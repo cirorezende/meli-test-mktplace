@@ -3,6 +3,8 @@ package br.com.ml.mktplace.orders.adapter.outbound.persistence;
 import br.com.ml.mktplace.orders.adapter.outbound.persistence.entity.OrderEntity;
 import br.com.ml.mktplace.orders.adapter.outbound.persistence.mapper.OrderEntityMapper;
 import br.com.ml.mktplace.orders.adapter.outbound.persistence.repository.JpaOrderEntityRepository;
+import br.com.ml.mktplace.orders.domain.model.Address;
+import br.com.ml.mktplace.orders.domain.model.DistributionCenter;
 import br.com.ml.mktplace.orders.domain.model.Order;
 import br.com.ml.mktplace.orders.domain.model.OrderNotFoundException;
 import br.com.ml.mktplace.orders.domain.model.NearbyDistributionCenter;
@@ -105,5 +107,44 @@ public class JpaOrderRepository implements OrderRepository {
         return rows.stream()
                 .map(r -> new NearbyDistributionCenter((String) r[0], ((Number) r[1]).doubleValue()))
                 .toList();
+    }
+
+    /**
+     * Carrega os detalhes completos dos CDs a partir dos códigos informados usando o catálogo local (tabela distribution_centers).
+     */
+    public List<DistributionCenter> findDistributionCentersByCodes(List<String> codes) {
+        if (codes == null || codes.isEmpty()) return List.of();
+        String[] arr = codes.toArray(new String[0]);
+        List<Object[]> rows = jpaRepository.findDistributionCentersByCodes(arr);
+        return rows.stream().map(r -> {
+            String code = (String) r[0];
+            String name = (String) r[1];
+            String addressJson = (String) r[2];
+            double longitude = ((Number) r[3]).doubleValue();
+            double latitude = ((Number) r[4]).doubleValue();
+            // Reconstruir Address a partir de JSON armazenado e coordenadas
+            try {
+                com.fasterxml.jackson.databind.ObjectMapper om = new com.fasterxml.jackson.databind.ObjectMapper();
+                com.fasterxml.jackson.databind.JsonNode node = om.readTree(addressJson);
+                String street = node.get("street").asText();
+                String city = node.get("city").asText();
+                String state = node.get("state").asText();
+                String country = node.get("country").asText();
+                com.fasterxml.jackson.databind.JsonNode postalOrZipNode = node.get("postalCode");
+                if (postalOrZipNode == null) postalOrZipNode = node.get("zipCode");
+                String postal = postalOrZipNode != null ? postalOrZipNode.asText() : "00000-000";
+                Address.Coordinates coords = new Address.Coordinates(
+                        java.math.BigDecimal.valueOf(latitude),
+                        java.math.BigDecimal.valueOf(longitude)
+                );
+                Address addr = new Address(street, city, state, country, postal, coords);
+                return new DistributionCenter(code, name, addr);
+            } catch (Exception e) {
+                // Fallback mínimo em caso de JSON inesperado
+                Address addr = new Address("Unknown", "Unknown", "Unknown", "Unknown", "00000-000",
+                        new Address.Coordinates(java.math.BigDecimal.valueOf(latitude), java.math.BigDecimal.valueOf(longitude)));
+                return new DistributionCenter(code, name, addr);
+            }
+        }).toList();
     }
 }

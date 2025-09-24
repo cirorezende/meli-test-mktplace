@@ -35,12 +35,12 @@ public class OrderFlowIT extends BaseIntegrationTest {
     @BeforeEach
     void setupStubs() {
         // Sucesso para item ABC123
-        stubFor(get(urlPathMatching("/distribution-centers/item/ABC123"))
-                .willReturn(aResponse()
-                        .withStatus(200)
-                        .withHeader("Content-Type", "application/json")
-                        .withBody("[{\"code\":\"CD1\",\"name\":\"CD One\",\"street\":\"Rua A\",\"city\":\"SP\",\"state\":\"SP\",\"country\":\"BR\",\"zipCode\":\"01000-000\",\"latitude\":-23.5,\"longitude\":-46.6}]")
-                ));
+    stubFor(get(urlPathMatching("/distribution-centers/item/ABC123"))
+        .willReturn(aResponse()
+            .withStatus(200)
+            .withHeader("Content-Type", "application/json")
+            .withBody("[\"SP-001\"]")
+        ));
     }
 
     @Test

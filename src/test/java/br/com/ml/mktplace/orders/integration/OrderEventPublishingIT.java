@@ -42,14 +42,14 @@ public class OrderEventPublishingIT extends BaseIntegrationTest {
         headers.setContentType(MediaType.APPLICATION_JSON);
 
         // Stub WireMock para item EVT123
-    WireMock.stubFor(
-        WireMock.get(
+        WireMock.stubFor(
+            WireMock.get(
                 WireMock.urlPathMatching("/distribution-centers/item/EVT123"))
-            .willReturn(WireMock.aResponse()
-                                .withStatus(200)
-                                .withHeader("Content-Type", "application/json")
-                                .withBody("[{\"code\":\"CDX\",\"name\":\"CD X\",\"street\":\"Rua X\",\"city\":\"SP\",\"state\":\"SP\",\"country\":\"BR\",\"zipCode\":\"01000-000\",\"latitude\":-23.6,\"longitude\":-46.7}]")
-                        )
+                .willReturn(WireMock.aResponse()
+                    .withStatus(200)
+                    .withHeader("Content-Type", "application/json")
+                    .withBody("[\"SP-001\"]")
+                )
         );
 
         // Act

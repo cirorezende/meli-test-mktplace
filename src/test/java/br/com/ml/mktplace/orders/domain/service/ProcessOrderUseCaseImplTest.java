@@ -41,6 +41,9 @@ class ProcessOrderUseCaseImplTest {
     @Mock
     private DistributionCenterSelectionService selectionService;
     
+    @Mock
+    private br.com.ml.mktplace.orders.adapter.outbound.persistence.JpaOrderRepository jpaOrderRepository;
+    
     private ObservabilityMetrics observabilityMetrics;
     
     private ProcessOrderUseCaseImpl useCase;
@@ -62,6 +65,14 @@ class ProcessOrderUseCaseImplTest {
                 selectionService,
                 observabilityMetrics
         );
+        // Inject optional JPA repository to enable local enrichment in tests
+        try {
+            java.lang.reflect.Field f = ProcessOrderUseCaseImpl.class.getDeclaredField("jpaOrderRepository");
+            f.setAccessible(true);
+            f.set(useCase, jpaOrderRepository);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
         
         // Create test data
         Address address = new Address(
@@ -112,8 +123,11 @@ class ProcessOrderUseCaseImplTest {
     void shouldProcessOrderSuccessfully() {
         // Given
         when(orderRepository.findById("ORDER-001")).thenReturn(Optional.of(validOrder));
-    when(cacheService.get(any(String.class), eq(DistributionCenter[].class))).thenReturn(Optional.empty());
-        when(distributionCenterService.findAllDistributionCenters()).thenReturn(availableCenters);
+        when(cacheService.get(any(String.class), eq(String[].class))).thenReturn(Optional.empty());
+        when(distributionCenterService.findAllDistributionCenters()).thenReturn(java.util.List.of("DC-001"));
+        when(jpaOrderRepository.findDistributionCentersByCodes(anyList())).thenReturn(availableCenters);
+        when(jpaOrderRepository.findNearbyDistributionCentersOrdered(anyDouble(), anyDouble(), anyList()))
+            .thenReturn(java.util.List.of(new NearbyDistributionCenter("DC-001", 1.0)));
         when(selectionService.selectDistributionCenter(availableCenters, validOrder.getDeliveryAddress()))
             .thenReturn(selectedCenter);
         
@@ -134,7 +148,7 @@ class ProcessOrderUseCaseImplTest {
         assertThat(result.getStatus()).isEqualTo(OrderStatus.PROCESSED);
         verify(orderRepository, times(2)).save(any(Order.class)); // Processing + Final save
         verify(distributionCenterService).findAllDistributionCenters();
-    verify(cacheService).put(any(String.class), any(DistributionCenter[].class), eq(Duration.ofMinutes(5)));
+        verify(cacheService).put(any(String.class), any(String[].class), eq(Duration.ofMinutes(5)));
         verify(selectionService).selectDistributionCenter(availableCenters, validOrder.getDeliveryAddress());
         verify(eventPublisher).publishOrderProcessed(result);
     }
@@ -238,8 +252,11 @@ class ProcessOrderUseCaseImplTest {
     void shouldUseCachedDistributionCentersWhenAvailable() {
         // Given
         when(orderRepository.findById("ORDER-001")).thenReturn(Optional.of(validOrder));
-    DistributionCenter[] cachedCenters = availableCenters.toArray(new DistributionCenter[0]);
-    when(cacheService.get(any(String.class), eq(DistributionCenter[].class))).thenReturn(Optional.of(cachedCenters));
+        String[] cachedCodes = new String[]{"DC-001"};
+        when(cacheService.get(any(String.class), eq(String[].class))).thenReturn(Optional.of(cachedCodes));
+        when(jpaOrderRepository.findDistributionCentersByCodes(anyList())).thenReturn(availableCenters);
+        when(jpaOrderRepository.findNearbyDistributionCentersOrdered(anyDouble(), anyDouble(), anyList()))
+            .thenReturn(java.util.List.of(new NearbyDistributionCenter("DC-001", 1.0)));
         when(selectionService.selectDistributionCenter(availableCenters, validOrder.getDeliveryAddress()))
             .thenReturn(selectedCenter);
         
@@ -257,7 +274,7 @@ class ProcessOrderUseCaseImplTest {
         useCase.processOrder("ORDER-001");
         
         // Then
-    verify(cacheService).get(any(String.class), eq(DistributionCenter[].class));
+        verify(cacheService).get(any(String.class), eq(String[].class));
         verify(distributionCenterService, never()).findAllDistributionCenters();
         verify(cacheService, never()).put(any(String.class), any(), any(Duration.class));
     }
@@ -267,7 +284,7 @@ class ProcessOrderUseCaseImplTest {
     void shouldHandleExternalServiceExceptionAndMarkOrderAsFailed() {
         // Given
         when(orderRepository.findById("ORDER-001")).thenReturn(Optional.of(validOrder));
-    when(cacheService.get(any(String.class), eq(DistributionCenter[].class))).thenReturn(Optional.empty());
+        when(cacheService.get(any(String.class), eq(String[].class))).thenReturn(Optional.empty());
         when(distributionCenterService.findAllDistributionCenters())
             .thenThrow(new ExternalServiceException("DistributionCenterService", "Service unavailable"));
         
@@ -295,7 +312,7 @@ class ProcessOrderUseCaseImplTest {
     void shouldHandleEmptyDistributionCentersList() {
         // Given
         when(orderRepository.findById("ORDER-001")).thenReturn(Optional.of(validOrder));
-    when(cacheService.get(any(String.class), eq(DistributionCenter[].class))).thenReturn(Optional.empty());
+        when(cacheService.get(any(String.class), eq(String[].class))).thenReturn(Optional.empty());
         when(distributionCenterService.findAllDistributionCenters()).thenReturn(List.of());
         
         Order failedOrder = new Order(
@@ -331,8 +348,11 @@ class ProcessOrderUseCaseImplTest {
         );
         
         when(orderRepository.findById("ORDER-001")).thenReturn(Optional.of(failedOrder));
-    when(cacheService.get(any(String.class), eq(DistributionCenter[].class))).thenReturn(Optional.empty());
-        when(distributionCenterService.findAllDistributionCenters()).thenReturn(availableCenters);
+        when(cacheService.get(any(String.class), eq(String[].class))).thenReturn(Optional.empty());
+        when(distributionCenterService.findAllDistributionCenters()).thenReturn(java.util.List.of("DC-001"));
+        when(jpaOrderRepository.findDistributionCentersByCodes(anyList())).thenReturn(availableCenters);
+        when(jpaOrderRepository.findNearbyDistributionCentersOrdered(anyDouble(), anyDouble(), anyList()))
+            .thenReturn(java.util.List.of(new NearbyDistributionCenter("DC-001", 1.0)));
         when(selectionService.selectDistributionCenter(availableCenters, failedOrder.getDeliveryAddress()))
             .thenReturn(selectedCenter);
         
@@ -375,7 +395,7 @@ class ProcessOrderUseCaseImplTest {
     void shouldHandleUnexpectedExceptionDuringProcessing() {
         // Given
         when(orderRepository.findById("ORDER-001")).thenReturn(Optional.of(validOrder));
-        when(cacheService.get(any(String.class), eq(DistributionCenter[].class)))
+        when(cacheService.get(any(String.class), eq(String[].class)))
             .thenThrow(new RuntimeException("Unexpected cache error"));
         
         // When/Then

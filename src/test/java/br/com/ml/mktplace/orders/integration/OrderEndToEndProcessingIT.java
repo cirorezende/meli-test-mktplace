@@ -39,17 +39,17 @@ public class OrderEndToEndProcessingIT extends BaseIntegrationTest {
     @BeforeEach
     void setupStubs() {
         String itemId = "ASYNC-PROC-1";
-        stubFor(get(urlPathMatching("/distribution-centers/item/" + itemId))
-                .willReturn(aResponse()
-                        .withStatus(200)
-                        .withHeader("Content-Type", "application/json")
-                        .withBody("[{\"code\":\"CDPROC\",\"name\":\"CD Proc\",\"street\":\"Rua P\",\"city\":\"SP\",\"state\":\"SP\",\"country\":\"BR\",\"zipCode\":\"01000-000\",\"latitude\":-23.5,\"longitude\":-46.6}]")
-                ));
+    stubFor(get(urlPathMatching("/distribution-centers/item/" + itemId))
+        .willReturn(aResponse()
+            .withStatus(200)
+            .withHeader("Content-Type", "application/json")
+            .withBody("[\"SP-001\"]")
+        ));
         stubFor(get(urlPathMatching("/distribution-centers"))
                 .willReturn(aResponse()
                         .withStatus(200)
                         .withHeader("Content-Type", "application/json")
-                        .withBody("[{\"code\":\"CDPROC\",\"name\":\"CD Proc\",\"street\":\"Rua P\",\"city\":\"SP\",\"state\":\"SP\",\"country\":\"BR\",\"zipCode\":\"01000-000\",\"latitude\":-23.5,\"longitude\":-46.6}]")
+            .withBody("[\"SP-001\"]")
                 ));
     }
 

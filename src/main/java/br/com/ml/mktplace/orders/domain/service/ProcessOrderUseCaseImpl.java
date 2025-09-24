@@ -216,23 +216,39 @@ public class ProcessOrderUseCaseImpl implements ProcessOrderUseCase {
     }
     
     private List<DistributionCenter> getAvailableDistributionCentersForItem(String itemId) {
-        // Cache por item: quais CDs possuem o item disponível
-        String cacheKey = "item-dc-availability:v1:" + itemId;
-        Optional<DistributionCenter[]> cachedArrayOpt = cacheService.get(cacheKey, DistributionCenter[].class);
-        if (cachedArrayOpt.isPresent()) {
-            DistributionCenter[] arr = cachedArrayOpt.get();
-            if (arr.length > 0) {
-                return java.util.Arrays.asList(arr);
+        // Cache por item: códigos de CDs que possuem o item disponível
+        String cacheKey = "item-dc-availability:v2:" + itemId;
+        Optional<String[]> cachedArrayOpt = cacheService.get(cacheKey, String[].class);
+        List<String> codes;
+        if (cachedArrayOpt.isPresent() && cachedArrayOpt.get().length > 0) {
+            codes = java.util.Arrays.asList(cachedArrayOpt.get());
+        } else {
+            // Tenta por item; se vazio, faz fallback para todos (compatibilidade com testes legados)
+            List<String> byItem = distributionCenterService.findDistributionCentersByItem(itemId);
+            if (byItem == null || byItem.isEmpty()) {
+                log.debug("Fallback para findAllDistributionCenters() pois consulta por item {} retornou vazia", itemId);
+                codes = distributionCenterService.findAllDistributionCenters();
+            } else {
+                codes = byItem;
             }
+            cacheService.put(cacheKey, codes.toArray(String[]::new), java.time.Duration.ofMinutes(5));
         }
-        // Tenta por item; se vazio, faz fallback para todos (compatibilidade com testes legados)
-        List<DistributionCenter> centers = distributionCenterService.findDistributionCentersByItem(itemId);
-        if (centers == null || centers.isEmpty()) {
-            log.debug("Fallback para findAllDistributionCenters() pois consulta por item {} retornou vazia", itemId);
-            centers = distributionCenterService.findAllDistributionCenters();
+
+        // Carrega os detalhes completos na base local
+        if (jpaOrderRepository != null) {
+            return ((br.com.ml.mktplace.orders.adapter.outbound.persistence.JpaOrderRepository) jpaOrderRepository)
+                    .findDistributionCentersByCodes(codes);
         }
-        cacheService.put(cacheKey, centers.toArray(new DistributionCenter[0]), java.time.Duration.ofMinutes(5));
-        return centers;
+        // Fallback: materializa mínimos se repositório JPA não disponível (ex.: testes unitários puros)
+        java.util.List<DistributionCenter> minimal = new java.util.ArrayList<>();
+        for (String code : codes) {
+            Address placeholder = new Address(
+                    "Unknown", "Unknown", "Unknown", "Unknown", "00000-000",
+                    new Address.Coordinates(java.math.BigDecimal.ZERO, java.math.BigDecimal.ZERO)
+            );
+            minimal.add(new DistributionCenter(code, "DC " + code, placeholder));
+        }
+        return minimal;
     }
     
     private void validateOrderId(String orderId) {

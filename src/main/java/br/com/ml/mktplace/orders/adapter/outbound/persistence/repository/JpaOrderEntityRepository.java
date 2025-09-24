@@ -72,4 +72,18 @@ public interface JpaOrderEntityRepository extends JpaRepository<OrderEntity, Str
             @Param("longitude") double longitude,
             @Param("codes") String[] codes
     );
+
+    /**
+     * Retorna registros completos da tabela distribution_centers para os códigos informados.
+     */
+    @Query(value = """
+        SELECT dc.code,
+               dc.name,
+               dc.address,
+               ST_X(dc.coordinates) AS longitude,
+               ST_Y(dc.coordinates) AS latitude
+        FROM distribution_centers dc
+        WHERE dc.code = ANY(:codes)
+        """, nativeQuery = true)
+    List<Object[]> findDistributionCentersByCodes(@Param("codes") String[] codes);
 }

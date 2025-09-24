@@ -1,8 +1,5 @@
 package br.com.ml.mktplace.orders.adapter.outbound.http;
 
-import br.com.ml.mktplace.orders.adapter.outbound.http.dto.DistributionCenterDto;
-import br.com.ml.mktplace.orders.domain.model.Address;
-import br.com.ml.mktplace.orders.domain.model.DistributionCenter;
 import br.com.ml.mktplace.orders.domain.model.ExternalServiceException;
 import br.com.ml.mktplace.orders.domain.port.DistributionCenterService;
 import org.slf4j.Logger;
@@ -13,7 +10,6 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
-import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.List;
 
@@ -39,7 +35,7 @@ public class HttpDistributionCenterService implements DistributionCenterService 
     }
     
     @Override
-    public List<DistributionCenter> findDistributionCentersByItem(String itemId) {
+    public List<String> findDistributionCentersByItem(String itemId) {
         if (itemId == null || itemId.trim().isEmpty()) {
             throw new IllegalArgumentException("Item ID cannot be null or empty");
         }
@@ -48,19 +44,16 @@ public class HttpDistributionCenterService implements DistributionCenterService 
             String url = baseUrl + "/distribution-centers/item/" + itemId;
             
             logger.debug("Fetching distribution centers for item: {}", itemId);
-            DistributionCenterDto[] dtos = restTemplate.getForObject(url, DistributionCenterDto[].class);
+            String[] codes = restTemplate.getForObject(url, String[].class);
             
-            if (dtos == null) {
+            if (codes == null) {
                 logger.debug("No distribution centers found for item: {}", itemId);
                 return List.of();
             }
             
-            List<DistributionCenter> distributionCenters = Arrays.stream(dtos)
-                    .map(this::mapToDomain)
-                    .toList();
-            
-            logger.debug("Found {} distribution centers for item: {}", distributionCenters.size(), itemId);
-            return distributionCenters;
+            List<String> list = Arrays.stream(codes).toList();
+            logger.debug("Found {} distribution centers for item: {}", list.size(), itemId);
+            return list;
             
         } catch (RestClientException e) {
             logger.error("Failed to fetch distribution centers for item: {}", itemId, e);
@@ -69,7 +62,7 @@ public class HttpDistributionCenterService implements DistributionCenterService 
     }
     
     @Override
-    public List<DistributionCenter> findDistributionCentersByItems(List<String> itemIds) {
+    public List<String> findDistributionCentersByItems(List<String> itemIds) {
         if (itemIds == null || itemIds.isEmpty()) {
             throw new IllegalArgumentException("Item IDs list cannot be null or empty");
         }
@@ -80,19 +73,16 @@ public class HttpDistributionCenterService implements DistributionCenterService 
             logger.debug("Fetching distribution centers for {} items", itemIds.size());
             
             // Send POST request with item IDs in the body
-            DistributionCenterDto[] dtos = restTemplate.postForObject(url, itemIds, DistributionCenterDto[].class);
+            String[] codes = restTemplate.postForObject(url, itemIds, String[].class);
             
-            if (dtos == null) {
+            if (codes == null) {
                 logger.debug("No distribution centers found for items");
                 return List.of();
             }
             
-            List<DistributionCenter> distributionCenters = Arrays.stream(dtos)
-                    .map(this::mapToDomain)
-                    .toList();
-            
-            logger.debug("Found {} distribution centers for items", distributionCenters.size());
-            return distributionCenters;
+            List<String> list = Arrays.stream(codes).toList();
+            logger.debug("Found {} distribution centers for items", list.size());
+            return list;
             
         } catch (RestClientException e) {
             logger.error("Failed to fetch distribution centers for items", e);
@@ -101,48 +91,25 @@ public class HttpDistributionCenterService implements DistributionCenterService 
     }
     
     @Override
-    public List<DistributionCenter> findAllDistributionCenters() {
+    public List<String> findAllDistributionCenters() {
         try {
             String url = baseUrl + "/distribution-centers";
             
             logger.debug("Fetching all distribution centers");
-            DistributionCenterDto[] dtos = restTemplate.getForObject(url, DistributionCenterDto[].class);
+            String[] codes = restTemplate.getForObject(url, String[].class);
             
-            if (dtos == null) {
+            if (codes == null) {
                 logger.debug("No distribution centers found");
                 return List.of();
             }
             
-            List<DistributionCenter> distributionCenters = Arrays.stream(dtos)
-                    .map(this::mapToDomain)
-                    .toList();
-            
-            logger.debug("Found {} distribution centers", distributionCenters.size());
-            return distributionCenters;
+            List<String> list = Arrays.stream(codes).toList();
+            logger.debug("Found {} distribution centers", list.size());
+            return list;
             
         } catch (RestClientException e) {
             logger.error("Failed to fetch all distribution centers", e);
             throw new ExternalServiceException("DistributionCenterService", "Failed to fetch all distribution centers", e);
         }
-    }
-    
-    private DistributionCenter mapToDomain(DistributionCenterDto dto) {
-        Address address = new Address(
-                dto.getStreet(),
-                dto.getCity(),
-                dto.getState(),
-                dto.getCountry(),
-                dto.getZipCode(),
-                new Address.Coordinates(
-                        BigDecimal.valueOf(dto.getLatitude()),
-                        BigDecimal.valueOf(dto.getLongitude())
-                )
-        );
-        
-        return new DistributionCenter(
-                dto.getCode(),
-                dto.getName(),
-                address
-        );
     }
 }

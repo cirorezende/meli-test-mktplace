@@ -1,14 +1,11 @@
 package br.com.ml.mktplace.orders.adapter.outbound.http;
 
-import br.com.ml.mktplace.orders.domain.model.Address;
-import br.com.ml.mktplace.orders.domain.model.DistributionCenter;
 import br.com.ml.mktplace.orders.domain.port.DistributionCenterService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 
-import java.math.BigDecimal;
 import java.util.List;
 
 /**
@@ -21,46 +18,34 @@ public class DevFallbackDistributionCenterService implements DistributionCenterS
 
     private static final Logger log = LoggerFactory.getLogger(DevFallbackDistributionCenterService.class);
 
-    private final List<DistributionCenter> staticCenters;
+    private final List<String> staticCodes;
 
     public DevFallbackDistributionCenterService() {
-        Address spAddress = new Address(
-                "Rua Exemplo",
-                "Sao Paulo",
-                "SP",
-                "Brasil",
-                "01000-000",
-                new Address.Coordinates(new BigDecimal("-23.5505"), new BigDecimal("-46.6333"))
-        );
-        Address rjAddress = new Address(
-                "Av Atlântica",
-                "Rio de Janeiro",
-                "RJ",
-                "Brasil",
-                "22010-000",
-                new Address.Coordinates(new BigDecimal("-22.9707"), new BigDecimal("-43.1824"))
-        );
-        this.staticCenters = List.of(
-                new DistributionCenter("DC-SP-01", "Centro SP 01", spAddress),
-                new DistributionCenter("DC-RJ-01", "Centro RJ 01", rjAddress)
-        );
+    this.staticCodes = List.of("SP-001", "RJ-001", "MG-001", "PR-001", "BA-001");
     }
 
     @Override
-    public List<DistributionCenter> findDistributionCentersByItem(String itemId) {
-        log.debug("[dev-fallback] Returning static centers for item {}", itemId);
-        return staticCenters;
+    public List<String> findDistributionCentersByItem(String itemId) {
+        log.debug("[dev-fallback] Returning codes for item {}", itemId);
+        // simple randomized subset between 1 and size
+        int max = Math.min(5, staticCodes.size());
+        int count = 1 + new java.util.Random().nextInt(max);
+        java.util.List<String> shuffled = new java.util.ArrayList<>(staticCodes);
+        java.util.Collections.shuffle(shuffled);
+        java.util.List<String> picked = new java.util.ArrayList<>(shuffled.subList(0, count));
+        picked.sort(java.util.Comparator.naturalOrder());
+        return picked;
     }
 
     @Override
-    public List<DistributionCenter> findDistributionCentersByItems(List<String> itemIds) {
-        log.debug("[dev-fallback] Returning static centers for {} items", itemIds.size());
-        return staticCenters;
+    public List<String> findDistributionCentersByItems(List<String> itemIds) {
+        log.debug("[dev-fallback] Returning codes for {} items", itemIds.size());
+        return findDistributionCentersByItem("MULTI");
     }
 
     @Override
-    public List<DistributionCenter> findAllDistributionCenters() {
-        log.debug("[dev-fallback] Returning static centers ({} centers)", staticCenters.size());
-        return staticCenters;
+    public List<String> findAllDistributionCenters() {
+        log.debug("[dev-fallback] Returning static codes ({} centers)", staticCodes.size());
+        return staticCodes;
     }
 }

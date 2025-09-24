@@ -35,11 +35,11 @@ public class OrderEventConsumptionIT extends BaseIntegrationTest {
     void shouldPublishAndConsumeOrderEvent() {
         // Arrange
         String itemId = "EVT-CONSUME-1";
-        stubFor(get(urlPathMatching("/distribution-centers/item/" + itemId))
+    stubFor(get(urlPathMatching("/distribution-centers/item/" + itemId))
                 .willReturn(aResponse()
                         .withStatus(200)
                         .withHeader("Content-Type", "application/json")
-                        .withBody("[{\"code\":\"CDZ\",\"name\":\"CD Z\",\"street\":\"Rua Z\",\"city\":\"SP\",\"state\":\"SP\",\"country\":\"BR\",\"zipCode\":\"01000-000\",\"latitude\":-23.51,\"longitude\":-46.61}]")
+            .withBody("[\"SP-001\"]")
                 ));
 
         OrderRequest request = new OrderRequest();
