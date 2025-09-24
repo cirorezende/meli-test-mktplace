@@ -18,12 +18,8 @@ public class OrderItemDto {
     @JsonProperty("quantity")
     private int quantity;
     
-    // Response-only fields
-    @Schema(description = "DC code selected during processing; not required on requests", readOnly = true)
-    @JsonProperty("distributionCenterCode")
-    private String distributionCenterCode;
-
-    @Schema(description = "Available DCs for this item ordered by distance (most distant first as per requirement)", readOnly = true)
+    // Response-only field
+    @Schema(description = "Available DCs for this item ordered by distance", readOnly = true)
     @JsonProperty("availableDistributionCenters")
     private java.util.List<NearbyDcDto> availableDistributionCenters;
 
@@ -44,15 +40,9 @@ public class OrderItemDto {
         this.quantity = quantity;
     }
     
-    public OrderItemDto(String itemId, int quantity, String distributionCenterCode) {
+    public OrderItemDto(String itemId, int quantity, java.util.List<NearbyDcDto> availableDistributionCenters) {
         this.itemId = itemId;
         this.quantity = quantity;
-        this.distributionCenterCode = distributionCenterCode;
-    }
-    public OrderItemDto(String itemId, int quantity, String distributionCenterCode, java.util.List<NearbyDcDto> availableDistributionCenters) {
-        this.itemId = itemId;
-        this.quantity = quantity;
-        this.distributionCenterCode = distributionCenterCode;
         this.availableDistributionCenters = availableDistributionCenters;
     }
     
@@ -73,14 +63,6 @@ public class OrderItemDto {
         this.quantity = quantity;
     }
     
-    public String getDistributionCenterCode() {
-        return distributionCenterCode;
-    }
-    
-    public void setDistributionCenterCode(String distributionCenterCode) {
-        this.distributionCenterCode = distributionCenterCode;
-    }
-
     public java.util.List<NearbyDcDto> getAvailableDistributionCenters() {
         return availableDistributionCenters;
     }

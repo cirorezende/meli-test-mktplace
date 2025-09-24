@@ -58,6 +58,10 @@ Este plano de implementação detalha as tarefas necessárias para desenvolver o
 - **Resiliência**: Retry, circuit breaker e fallbacks (planejado)
 - **Versionamento**: APIs versionadas para evolução
 
+> Nota (24/09/2025): Base URL da API de Centros de Distribuição para ambiente local ajustada para `http://localhost:3000` (WireMock) sem prefixo `/api/v1`; o endpoint único ativo é `GET /distribuitioncenters?itemId={id}` retornando estritamente um array de strings (IDs).
+
+> Nota (24/09/2025): Adicionado `spring.data.redis.password` (default `redis_pass`) para alinhar com `requirepass redis_pass` do container Redis. Sem isso ocorria `RedisCommandExecutionException: NOAUTH HELLO must be called...`.
+
 ## Critérios de Sucesso
 
 - [x] Sistema processa pedidos com até 100 itens
