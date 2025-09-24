@@ -1,5 +1,4 @@
 # Docker Compose for Orders Processing System - Local Development
-version: '3.8'
 
 services:
   # Orders Processing Application
