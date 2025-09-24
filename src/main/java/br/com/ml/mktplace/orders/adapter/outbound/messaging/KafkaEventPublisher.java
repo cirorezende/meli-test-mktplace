@@ -6,6 +6,8 @@ import br.com.ml.mktplace.orders.adapter.config.metrics.OrdersMetricsBinder;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -15,6 +17,7 @@ import org.slf4j.MDC;
 import org.springframework.kafka.core.KafkaTemplate;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.List;
 
 /**
  * Event publisher implementation that logs events.
@@ -28,6 +31,7 @@ public class KafkaEventPublisher implements EventPublisher {
     private final ObjectMapper objectMapper;
     private final String topicPrefix;
     private final OrdersMetricsBinder metricsBinder;
+    private final MeterRegistry meterRegistry;
     @Autowired(required = false)
     private KafkaTemplate<String, Object> orderEventsKafkaTemplate; // Optional: only present when Kafka infra enabled
     
@@ -35,10 +39,12 @@ public class KafkaEventPublisher implements EventPublisher {
     public KafkaEventPublisher(
             ObjectMapper objectMapper,
             @Value("${app.events.topic-prefix:mktplace}") String topicPrefix,
-            OrdersMetricsBinder metricsBinder) {
+            OrdersMetricsBinder metricsBinder,
+            MeterRegistry meterRegistry) {
         this.objectMapper = objectMapper;
         this.topicPrefix = topicPrefix;
         this.metricsBinder = metricsBinder;
+        this.meterRegistry = meterRegistry;
     }
     
     @Override
@@ -50,6 +56,7 @@ public class KafkaEventPublisher implements EventPublisher {
         Map<String, Object> eventData = createEventData("ORDER_PROCESSED", order);
         publishEvent("order.processed", eventData);
         metricsBinder.incrementProcessed();
+    incrementKafkaCounter("ORDER_PROCESSED");
     }
     
     @Override
@@ -70,6 +77,7 @@ public class KafkaEventPublisher implements EventPublisher {
         
         publishEvent("order.failed", eventData);
         metricsBinder.incrementFailed();
+    incrementKafkaCounter("ORDER_FAILED");
     }
     
     @Override
@@ -85,6 +93,7 @@ public class KafkaEventPublisher implements EventPublisher {
         
         Map<String, Object> eventData = createEventData("ORDER_CREATED", order);
         publishEvent("order.created", eventData);
+    incrementKafkaCounter("ORDER_CREATED");
     }
     
     @Override
@@ -141,17 +150,33 @@ public class KafkaEventPublisher implements EventPublisher {
             if (orderEventsKafkaTemplate != null) {
                 try {
                     Object keyObj = eventData.get("aggregateId");
-                    String key = keyObj != null ? keyObj.toString() : null;
-                    orderEventsKafkaTemplate.sendDefault(key, eventData);
-                    logger.info("Event dispatched to Kafka default topic '{}' with key {}", orderEventsKafkaTemplate.getDefaultTopic(), key);
+                    String nonNullKey = keyObj != null ? keyObj.toString() : "UNKNOWN";
+                    orderEventsKafkaTemplate.sendDefault(nonNullKey, eventData);
+                    logger.info("Event dispatched to Kafka default topic '{}' with key {}", orderEventsKafkaTemplate.getDefaultTopic(), nonNullKey);
                 } catch (Exception sendEx) {
                     logger.error("Failed to send event to Kafka (non-fatal) {}", eventData.get("eventType"), sendEx);
+                    incrementKafkaErrorCounter(eventData.get("eventType"));
                 }
             }
             
         } catch (Exception e) {
             logger.error("Failed to publish event: {}", eventData.get("eventType"), e);
+            incrementKafkaErrorCounter(eventData.get("eventType"));
             throw new RuntimeException("Failed to publish event", e);
         }
+    }
+
+    private void incrementKafkaCounter(Object eventType) {
+        try {
+            String type = eventType == null ? "UNKNOWN" : eventType.toString();
+            meterRegistry.counter("kafka.events.published.total", List.of(Tag.of("type", type))).increment();
+        } catch (Exception ignored) { }
+    }
+
+    private void incrementKafkaErrorCounter(Object eventType) {
+        try {
+            String type = eventType == null ? "UNKNOWN" : eventType.toString();
+            meterRegistry.counter("kafka.events.errors.total", List.of(Tag.of("type", type))).increment();
+        } catch (Exception ignored) { }
     }
 }

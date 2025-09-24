@@ -1,6 +1,9 @@
 package br.com.ml.mktplace.orders.adapter.config;
 
 import org.springframework.beans.factory.annotation.Value;
+import io.micrometer.core.instrument.MeterRegistry;
+import br.com.ml.mktplace.orders.adapter.config.metrics.http.HttpClientMetricsInterceptor;
+import br.com.ml.mktplace.orders.adapter.config.metrics.http.CorrelationIdClientHttpRequestInterceptor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
@@ -54,12 +57,12 @@ public class HttpClientConfig {
      * e outros serviços externos.
      */
     @Bean
-    public RestTemplate restTemplate() {
+    public RestTemplate restTemplate(MeterRegistry registry) {
         RestTemplate restTemplate = new RestTemplate();
         restTemplate.setRequestFactory(clientHttpRequestFactory());
-        
-        // Configurar interceptors se necessário
-        // restTemplate.setInterceptors(List.of(new LoggingClientHttpRequestInterceptor()));
+    // Interceptors: correlação e métricas
+    restTemplate.getInterceptors().add(new CorrelationIdClientHttpRequestInterceptor());
+    restTemplate.getInterceptors().add(new HttpClientMetricsInterceptor(registry, "external-generic"));
         
         return restTemplate;
     }
@@ -111,16 +114,17 @@ public class HttpClientConfig {
     @Bean("distributionCenterRestTemplate")
     public RestTemplate distributionCenterRestTemplate(
             @Value("${app.api.distribution-center.timeout.connection:3000}") int dcConnectionTimeout,
-            @Value("${app.api.distribution-center.timeout.read:5000}") int dcReadTimeout) {
+        @Value("${app.api.distribution-center.timeout.read:5000}") int dcReadTimeout,
+        MeterRegistry registry) {
         
         SimpleClientHttpRequestFactory factory = new SimpleClientHttpRequestFactory();
         factory.setConnectTimeout(dcConnectionTimeout);
         factory.setReadTimeout(dcReadTimeout);
         
         RestTemplate restTemplate = new RestTemplate(factory);
-        
-        // Headers padrão para API de CDs se necessário
-        // restTemplate.setInterceptors(List.of(new DistributionCenterApiInterceptor()));
+        // Interceptors: correlação e métricas específico para a API de CDs
+        restTemplate.getInterceptors().add(new CorrelationIdClientHttpRequestInterceptor());
+        restTemplate.getInterceptors().add(new HttpClientMetricsInterceptor(registry, "distribution-centers-api"));
         
         return restTemplate;
     }

@@ -1,11 +1,14 @@
 package br.com.ml.mktplace.orders.adapter.config;
 
+import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.client.ClientHttpRequestFactory;
+import org.springframework.http.client.InterceptingClientHttpRequestFactory;
 import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.retry.support.RetryTemplate;
 import org.springframework.test.util.ReflectionTestUtils;
@@ -24,10 +27,12 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 class HttpClientConfigTest {
 
     private HttpClientConfig httpClientConfig;
+    private MeterRegistry meterRegistry;
 
     @BeforeEach
     void setUp() {
         httpClientConfig = new HttpClientConfig();
+        meterRegistry = new SimpleMeterRegistry();
         
         // Set test properties using reflection
         ReflectionTestUtils.setField(httpClientConfig, "connectionTimeout", 5000);
@@ -42,11 +47,17 @@ class HttpClientConfigTest {
     @DisplayName("Should create RestTemplate with correct configuration")
     void shouldCreateRestTemplateWithCorrectConfiguration() {
         // When
-        RestTemplate restTemplate = httpClientConfig.restTemplate();
+        RestTemplate restTemplate = httpClientConfig.restTemplate(meterRegistry);
         
         // Then
         assertNotNull(restTemplate);
-        assertThat(restTemplate.getRequestFactory()).isInstanceOf(SimpleClientHttpRequestFactory.class);
+        ClientHttpRequestFactory factory = restTemplate.getRequestFactory();
+        if (factory instanceof InterceptingClientHttpRequestFactory) {
+            Object delegate = ReflectionTestUtils.getField(factory, "requestFactory");
+            assertThat(delegate).isInstanceOf(SimpleClientHttpRequestFactory.class);
+        } else {
+            assertThat(factory).isInstanceOf(SimpleClientHttpRequestFactory.class);
+        }
     }
 
     @Test
@@ -74,13 +85,17 @@ class HttpClientConfigTest {
     @DisplayName("Should create Distribution Center RestTemplate")
     void shouldCreateDistributionCenterRestTemplate() {
         // When
-        RestTemplate restTemplate = httpClientConfig.distributionCenterRestTemplate(3000, 5000);
+        RestTemplate restTemplate = httpClientConfig.distributionCenterRestTemplate(3000, 5000, meterRegistry);
         
         // Then
         assertNotNull(restTemplate);
-        
         ClientHttpRequestFactory factory = restTemplate.getRequestFactory();
-        assertThat(factory).isInstanceOf(SimpleClientHttpRequestFactory.class);
+        if (factory instanceof InterceptingClientHttpRequestFactory) {
+            Object delegate = ReflectionTestUtils.getField(factory, "requestFactory");
+            assertThat(delegate).isInstanceOf(SimpleClientHttpRequestFactory.class);
+        } else {
+            assertThat(factory).isInstanceOf(SimpleClientHttpRequestFactory.class);
+        }
     }
 
     @Test
@@ -155,8 +170,8 @@ class HttpClientConfigTest {
     @DisplayName("Should create different beans for different methods")
     void shouldCreateDifferentBeansForDifferentMethods() {
         // When
-        RestTemplate defaultTemplate = httpClientConfig.restTemplate();
-        RestTemplate dcTemplate = httpClientConfig.distributionCenterRestTemplate(3000, 5000);
+        RestTemplate defaultTemplate = httpClientConfig.restTemplate(meterRegistry);
+        RestTemplate dcTemplate = httpClientConfig.distributionCenterRestTemplate(3000, 5000, meterRegistry);
         
         HttpClientConfig.DevelopmentHttpConfig devConfig = new HttpClientConfig.DevelopmentHttpConfig();
         HttpClientConfig.ProductionHttpConfig prodConfig = new HttpClientConfig.ProductionHttpConfig();
@@ -215,10 +230,10 @@ class HttpClientConfigTest {
         HttpClientConfig.ProductionHttpConfig prodConfig = new HttpClientConfig.ProductionHttpConfig();
         
         // When & Then - All should create beans without throwing exceptions
-        assertNotNull(httpClientConfig.restTemplate());
+        assertNotNull(httpClientConfig.restTemplate(meterRegistry));
         assertNotNull(httpClientConfig.clientHttpRequestFactory());
         assertNotNull(httpClientConfig.httpRetryTemplate());
-        assertNotNull(httpClientConfig.distributionCenterRestTemplate(3000, 5000));
+        assertNotNull(httpClientConfig.distributionCenterRestTemplate(3000, 5000, meterRegistry));
         assertNotNull(httpClientConfig.distributionCenterRetryTemplate(5, 500L));
         
         assertNotNull(devConfig.developmentRestTemplate());

@@ -1,8 +1,8 @@
 # Tarefa 10 - Implementação de Observabilidade
 
-## 🚧 Status: EM PROGRESSO (Atualizado: 22/09/2025)
+## 🚧 Status: EM PROGRESSO (Atualizado: 23/09/2025)
 
-Implementação avançada: logging estruturado (Logback + JSON), filtro Correlation ID ativo, métricas Prometheus expostas, contadores de pedidos processados/falhos, tempo de processamento, distribuição de itens, seleção de CDs e métricas de cache (hit/miss) adicionadas. Falta definição de dashboards e métricas externas (API de CDs e banco) complementares.
+Implementação avançada: logging estruturado (Logback + JSON), filtro Correlation ID ativo, métricas Prometheus expostas, contadores de pedidos processados/falhos, tempo de processamento, distribuição de itens, seleção de CDs e métricas de cache (hit/miss) adicionadas. Cliente HTTP externo instrumentado com métricas (latência/status) e correlação propagada; contadores Kafka (publicados/erros) adicionados. Falta apenas definição de dashboards e, opcionalmente, métricas de banco.
 
 ## Objetivo
 
@@ -21,7 +21,7 @@ Configurar observabilidade completa seguindo as definições do ADR-013, com log
 - [x] Métricas de performance e negócio adicionais (latências, seleção de CD, cache hit/miss)
 - [x] Health checks configurados (actuator + probes)
 - [ ] Dashboards básicos definidos (Grafana / Kibana – pendente)
-- [ ] Métricas externas API de CDs (latência / status codes)
+- [x] Métricas externas API de CDs (latência / status codes)
 - [ ] Métricas de operações de banco (latência agregada por tipo) / opcional
 
 ## Logging Estruturado
@@ -65,11 +65,12 @@ Configurar observabilidade completa seguindo as definições do ADR-013, com log
 - `orders.items.per.order` (DistributionSummary)  
 - `distribution.centers.selected` (counter com tag code)  
 
-### Métricas Técnicas (Parciais)
+### Métricas Técnicas (Atualizadas)
 
 - `cache.operations.total` (hit/miss por cache/op)  
-- (A FAZER) `api.cd.service.calls.total` (por status)  
-- (A FAZER) `api.cd.service.duration` (Timer)  
+- `external.http.client.requests` (Timer) — tags: `service`, `method`, `uri`, `status`, `outcome`, `exception`  
+  - `service=distribution-centers-api` para a API de CDs; `service=external-generic` para demais clientes  
+- `kafka.events.published.total{type}` e `kafka.events.errors.total{type}`  
 - (Opcional) `database.operations.duration` (Timer por operação)  
 
 ### Métricas de Sistema (Spring / Actuator)
@@ -84,6 +85,7 @@ Configurar observabilidade completa seguindo as definições do ADR-013, com log
 - Propagação em MDC (`correlationId`)
 - Header de saída `X-Correlation-Id`
 - Propagado para eventos publicados (payload inclui correlationId)
+- Propagado para chamadas HTTP externas via interceptor (`X-Correlation-Id`)
 
 ## Health Checks
 
@@ -101,7 +103,16 @@ Configurar observabilidade completa seguindo as definições do ADR-013, com log
 | CDs | Top CDs | topk(5, increase(distribution_centers_selected_total[1h])) | Carga por CD |
 | Cache | Hit Ratio | sum(increase(cache_operations_total{op="hit"}[5m])) / sum(increase(cache_operations_total[5m])) | Efetividade do cache |
 | API Externa | Latência | (Timer a definir) | Performance integração |
-| API Externa | Taxa Erros | increase(api_cd_service_calls_total{status!="200"}[5m]) / increase(api_cd_service_calls_total[5m]) | Saúde integração |
+| API Externa | Taxa Erros | increase(external_http_client_requests_seconds_count{service="distribution-centers-api",status!~"2.."}[5m]) / increase(external_http_client_requests_seconds_count{service="distribution-centers-api"}[5m]) | Saúde integração |
+
+## Como verificar rapidamente (dev)
+
+1. Listar métricas: `GET /actuator/metrics`
+2. Inspecionar HTTP externo: `GET /actuator/metrics/external.http.client.requests`
+3. Inspecionar Kafka publish: `GET /actuator/metrics/kafka.events.published.total`
+4. Scrape geral (Prometheus): `GET /actuator/prometheus`
+
+Observação: execute um fluxo que faça chamadas à API de CDs para popular as séries (`service="distribution-centers-api"`).
 
 ## Próximas Ações (Para concluir a tarefa)
 

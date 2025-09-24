@@ -69,7 +69,7 @@ Este plano de implementação detalha as tarefas necessárias para desenvolver o
 - [x] **APIs REST funcionais para processamento e consulta** *(Controllers, DTOs, validação, error handling)*
 - [x] **Configuração completa por ambiente** *(ApplicationConfig, DatabaseConfig, CacheConfig, HttpClientConfig, KafkaConfig)*
 - [x] **Sistema conteinerizado e funcional** *(Docker + docker-compose com 8 serviços)*
-- 🚧 Observabilidade completa implementada *(dashboards + métricas externas pendentes)*
+- 🚧 Observabilidade quase completa *(métricas HTTP/Kafka + correlação concluídas; dashboards pendentes)*
 - [x] Testes de integração concluídos *(fluxo E2E assíncrono validado)*
 
 ## Status das Tarefas
@@ -94,7 +94,7 @@ Este plano de implementação detalha as tarefas necessárias para desenvolver o
 ### Fase 4: Qualidade e Observabilidade
 
 - ✅ **Tarefa 09** - Testes Unitários (Concluída - 21/09/2025 / Atualizada 22/09 com Testcontainers)
-- 🚧 **Tarefa 10** - Observabilidade (Em Progresso - 22/09/2025)
+- 🚧 **Tarefa 10** - Observabilidade (Em Progresso - 23/09/2025; métricas HTTP/Kafka + correlação concluídas; dashboards pendentes)
 
 ### Fase 5: Deploy e Integração
 
@@ -120,7 +120,7 @@ Este plano de implementação detalha as tarefas necessárias para desenvolver o
 
 ### Próximas Entregas Prioritárias
 
-1. Tarefa 10 - Finalizar dashboards e métricas externas (latência do cliente externo, status codes, contadores de eventos Kafka).  
+1. Tarefa 10 - Finalizar dashboards (latência HTTP externa, status, Kafka) — métricas já expostas.  
 2. Hardening opcional dos cenários de integração (falhas: 500/timeout/lista vazia; circuit breaker; retries) — fora do escopo mínimo concluído da T12.
 
 ### Notas de Progresso (23/09/2025)
@@ -136,7 +136,7 @@ Este plano de implementação detalha as tarefas necessárias para desenvolver o
   - Correção do path WireMock para `GET /distribuitioncenters?itemId=...` com resposta estritamente em array de strings (IDs).
   - Guardas de idempotência no processamento assíncrono.
   
-- Observabilidade parcialmente avançada: métricas de pedidos, cache e seleção de CD implementadas.  
+- Observabilidade avançada: métricas de pedidos, cache e seleção de CD implementadas; cliente HTTP externo instrumentado (latência/status) e contadores Kafka adicionados; correlação propagada em HTTP e eventos.  
 - Próximo incremento: instrumentar cliente HTTP externo (latência, status) + cenários de falha no WireMock.
   
 Atualização (23/09/2025):
