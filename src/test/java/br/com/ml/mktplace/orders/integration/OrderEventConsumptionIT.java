@@ -35,7 +35,8 @@ public class OrderEventConsumptionIT extends BaseIntegrationTest {
     void shouldPublishAndConsumeOrderEvent() {
         // Arrange
         String itemId = "EVT-CONSUME-1";
-    stubFor(get(urlPathMatching("/distribution-centers/item/" + itemId))
+    stubFor(get(urlPathEqualTo("/distribuitioncenters"))
+                .withQueryParam("itemId", equalTo(itemId))
                 .willReturn(aResponse()
                         .withStatus(200)
                         .withHeader("Content-Type", "application/json")

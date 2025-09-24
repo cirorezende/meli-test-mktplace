@@ -39,18 +39,13 @@ public class OrderEndToEndProcessingIT extends BaseIntegrationTest {
     @BeforeEach
     void setupStubs() {
         String itemId = "ASYNC-PROC-1";
-    stubFor(get(urlPathMatching("/distribution-centers/item/" + itemId))
+    stubFor(get(urlPathEqualTo("/distribuitioncenters"))
+        .withQueryParam("itemId", equalTo(itemId))
         .willReturn(aResponse()
             .withStatus(200)
             .withHeader("Content-Type", "application/json")
             .withBody("[\"SP-001\"]")
         ));
-        stubFor(get(urlPathMatching("/distribution-centers"))
-                .willReturn(aResponse()
-                        .withStatus(200)
-                        .withHeader("Content-Type", "application/json")
-            .withBody("[\"SP-001\"]")
-                ));
     }
 
     @Test

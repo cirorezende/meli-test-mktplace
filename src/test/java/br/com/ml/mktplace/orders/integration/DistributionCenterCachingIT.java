@@ -37,13 +37,13 @@ public class DistributionCenterCachingIT extends BaseIntegrationTest {
     @BeforeEach
     void resetWireMock() {
         WireMock.reset();
-    // Production code currently calls findAllDistributionCenters() -> GET /distribution-centers
-    stubFor(get(urlPathEqualTo("/distribution-centers"))
-                .willReturn(aResponse()
-                        .withStatus(200)
-                        .withHeader("Content-Type", "application/json")
-                        .withBody("[{\"code\":\"CDY\",\"name\":\"CD Y\",\"street\":\"Rua Y\",\"city\":\"SP\",\"state\":\"SP\",\"country\":\"BR\",\"zipCode\":\"01000-000\",\"latitude\":-23.55,\"longitude\":-46.61}]")
-                ));
+    stubFor(get(urlPathEqualTo("/distribuitioncenters"))
+        .withQueryParam("itemId", equalTo(ITEM))
+        .willReturn(aResponse()
+            .withStatus(200)
+            .withHeader("Content-Type", "application/json")
+            .withBody("[\"SP-001\"]")
+        ));
     }
 
     @Test
@@ -67,8 +67,8 @@ public class DistributionCenterCachingIT extends BaseIntegrationTest {
     ResponseEntity<OrderResponse> r2 = restTemplate.postForEntity("/v1/orders", new HttpEntity<>(req2, headers), OrderResponse.class);
     assertThat(r2.getStatusCode()).isEqualTo(HttpStatus.ACCEPTED);
 
-        // Verifica que o endpoint externo foi chamado apenas uma vez
-    verify(1, getRequestedFor(urlPathEqualTo("/distribution-centers")));
+        // Verifica que o endpoint externo foi chamado apenas uma vez para o item
+    verify(1, getRequestedFor(urlPathEqualTo("/distribuitioncenters")).withQueryParam("itemId", equalTo(ITEM)));
     }
 
     private void awaitOrderProcessed(String orderId) {

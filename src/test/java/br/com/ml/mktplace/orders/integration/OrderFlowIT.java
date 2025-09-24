@@ -35,7 +35,8 @@ public class OrderFlowIT extends BaseIntegrationTest {
     @BeforeEach
     void setupStubs() {
         // Sucesso para item ABC123
-    stubFor(get(urlPathMatching("/distribution-centers/item/ABC123"))
+    stubFor(get(urlPathEqualTo("/distribuitioncenters"))
+        .withQueryParam("itemId", equalTo("ABC123"))
         .willReturn(aResponse()
             .withStatus(200)
             .withHeader("Content-Type", "application/json")

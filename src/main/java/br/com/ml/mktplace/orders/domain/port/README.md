@@ -18,8 +18,8 @@ Este diretório contém as interfaces que definem as portas (ports) da Arquitetu
 - **Responsabilidade**: Consulta centros de distribuição via API externa
 - **Métodos**:
   - `findDistributionCentersByItem()`: CDs que possuem um item
-  - `findDistributionCentersByItems()`: CDs que possuem múltiplos itens
-  - `findAllDistributionCenters()`: Todos os CDs disponíveis
+  - Somente `findDistributionCentersByItem(itemId)`: a API externa aceita apenas 1 item por chamada
+  - Não há suporte para múltiplos itens em uma única requisição nem para buscar todos os CDs
 
 ### CacheService  
 - **Responsabilidade**: Operações de cache distribuído (Redis)

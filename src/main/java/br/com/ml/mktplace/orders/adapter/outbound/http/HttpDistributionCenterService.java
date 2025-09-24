@@ -39,77 +39,26 @@ public class HttpDistributionCenterService implements DistributionCenterService 
         if (itemId == null || itemId.trim().isEmpty()) {
             throw new IllegalArgumentException("Item ID cannot be null or empty");
         }
-        
+
         try {
-            String url = baseUrl + "/distribution-centers/item/" + itemId;
-            
-            logger.debug("Fetching distribution centers for item: {}", itemId);
+            // New single-item-only endpoint: GET /distribuitioncenters?itemId={id}
+            String url = baseUrl + "/distribuitioncenters?itemId=" + itemId;
+
+            logger.debug("Fetching distribution centers for item: {} via {}", itemId, url);
             String[] codes = restTemplate.getForObject(url, String[].class);
-            
+
             if (codes == null) {
                 logger.debug("No distribution centers found for item: {}", itemId);
                 return List.of();
             }
-            
+
             List<String> list = Arrays.stream(codes).toList();
             logger.debug("Found {} distribution centers for item: {}", list.size(), itemId);
             return list;
-            
+
         } catch (RestClientException e) {
             logger.error("Failed to fetch distribution centers for item: {}", itemId, e);
             throw new ExternalServiceException("DistributionCenterService", "Failed to fetch distribution centers for item: " + itemId, e);
-        }
-    }
-    
-    @Override
-    public List<String> findDistributionCentersByItems(List<String> itemIds) {
-        if (itemIds == null || itemIds.isEmpty()) {
-            throw new IllegalArgumentException("Item IDs list cannot be null or empty");
-        }
-        
-        try {
-            String url = baseUrl + "/distribution-centers/items";
-            
-            logger.debug("Fetching distribution centers for {} items", itemIds.size());
-            
-            // Send POST request with item IDs in the body
-            String[] codes = restTemplate.postForObject(url, itemIds, String[].class);
-            
-            if (codes == null) {
-                logger.debug("No distribution centers found for items");
-                return List.of();
-            }
-            
-            List<String> list = Arrays.stream(codes).toList();
-            logger.debug("Found {} distribution centers for items", list.size());
-            return list;
-            
-        } catch (RestClientException e) {
-            logger.error("Failed to fetch distribution centers for items", e);
-            throw new ExternalServiceException("DistributionCenterService", "Failed to fetch distribution centers for items", e);
-        }
-    }
-    
-    @Override
-    public List<String> findAllDistributionCenters() {
-        try {
-            String url = baseUrl + "/distribution-centers";
-            
-            logger.debug("Fetching all distribution centers");
-            String[] codes = restTemplate.getForObject(url, String[].class);
-            
-            if (codes == null) {
-                logger.debug("No distribution centers found");
-                return List.of();
-            }
-            
-            List<String> list = Arrays.stream(codes).toList();
-            logger.debug("Found {} distribution centers", list.size());
-            return list;
-            
-        } catch (RestClientException e) {
-            logger.error("Failed to fetch all distribution centers", e);
-            throw new ExternalServiceException("DistributionCenterService", "Failed to fetch all distribution centers", e);
         }
     }
 }

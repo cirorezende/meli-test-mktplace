@@ -1,7 +1,12 @@
 {
   "request": {
     "method": "GET",
-    "urlPattern": "/distribution-centers"
+    "urlPath": "/distribuitioncenters",
+    "queryParameters": {
+      "itemId": {
+        "matches": ".+"
+      }
+    }
   },
   "response": {
     "status": 200,

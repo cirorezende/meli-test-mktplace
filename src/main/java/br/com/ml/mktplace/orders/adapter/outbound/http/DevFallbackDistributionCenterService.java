@@ -37,15 +37,5 @@ public class DevFallbackDistributionCenterService implements DistributionCenterS
         return picked;
     }
 
-    @Override
-    public List<String> findDistributionCentersByItems(List<String> itemIds) {
-        log.debug("[dev-fallback] Returning codes for {} items", itemIds.size());
-        return findDistributionCentersByItem("MULTI");
-    }
-
-    @Override
-    public List<String> findAllDistributionCenters() {
-        log.debug("[dev-fallback] Returning static codes ({} centers)", staticCodes.size());
-        return staticCodes;
-    }
+    // Métodos de múltiplos itens e de "todos os CDs" foram removidos por regra de negócio.
 }

@@ -43,8 +43,8 @@ public class OrderEventPublishingIT extends BaseIntegrationTest {
 
         // Stub WireMock para item EVT123
         WireMock.stubFor(
-            WireMock.get(
-                WireMock.urlPathMatching("/distribution-centers/item/EVT123"))
+            WireMock.get(WireMock.urlPathEqualTo("/distribuitioncenters"))
+                .withQueryParam("itemId", WireMock.equalTo("EVT123"))
                 .willReturn(WireMock.aResponse()
                     .withStatus(200)
                     .withHeader("Content-Type", "application/json")

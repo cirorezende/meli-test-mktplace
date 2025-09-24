@@ -223,14 +223,9 @@ public class ProcessOrderUseCaseImpl implements ProcessOrderUseCase {
         if (cachedArrayOpt.isPresent() && cachedArrayOpt.get().length > 0) {
             codes = java.util.Arrays.asList(cachedArrayOpt.get());
         } else {
-            // Tenta por item; se vazio, faz fallback para todos (compatibilidade com testes legados)
+            // Tenta por item (única forma permitida pela API externa)
             List<String> byItem = distributionCenterService.findDistributionCentersByItem(itemId);
-            if (byItem == null || byItem.isEmpty()) {
-                log.debug("Fallback para findAllDistributionCenters() pois consulta por item {} retornou vazia", itemId);
-                codes = distributionCenterService.findAllDistributionCenters();
-            } else {
-                codes = byItem;
-            }
+            codes = (byItem == null) ? java.util.List.of() : byItem;
             cacheService.put(cacheKey, codes.toArray(String[]::new), java.time.Duration.ofMinutes(5));
         }
 
