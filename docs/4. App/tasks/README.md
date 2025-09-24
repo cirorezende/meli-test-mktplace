@@ -116,7 +116,7 @@ Este plano de implementação detalha as tarefas necessárias para desenvolver o
 | 09 | Testes Unitários | ✅ Concluída (c/ cobertura JaCoCo) | 23/09/2025 |
 | 10 | Observabilidade | 🚧 Em Progresso | 22/09/2025 |
 | 11 | Containerização | ✅ Concluída | 21/09/2025 |
-| 12 | Testes de Integração | ✅ Concluída (E2E assíncrono; cache v2 validado; eventos Kafka) | 23/09/2025 |
+| 12 | Testes de Integração | ✅ Concluída (E2E assíncrono; cache v2 per-item validado; eventos Kafka; contrato single-item) | 23/09/2025 |
 
 ### Próximas Entregas Prioritárias
 
@@ -130,16 +130,21 @@ Este plano de implementação detalha as tarefas necessárias para desenvolver o
 - Tarefa 12 concluída:
   - Fluxo E2E assíncrono com POST retornando 202 (RECEIVED) e evolução de estado por consumidor Kafka.
   - Remoção do prefixo "/api" dos RequestMappings; uso do `server.servlet.context-path=/api` para compor URL final.
-  - Estratégia de cache atualizada: chave versionada `distribution-centers:v2:{UF}` armazenando `DistributionCenter[]` (Jackson resiliente a campos desconhecidos).
-  - Garantia de chamada única ao serviço externo ao processar dois pedidos sequenciais (cache hit no segundo).
+  - Estratégia de cache atualizada: chave `item-dc-availability:v2:{itemId}` armazenando `String[]` (códigos de CDs) com TTL curto (5 min); enriquecimento local por códigos.
+  - Garantia de chamada única ao serviço externo por item (cache hit no segundo pedido com o mesmo item).
   - Publicação/consumo de eventos Kafka (ORDER_CREATED/ORDER_PROCESSED) validados.
-  - Correção do path WireMock para `/distribution-centers`.
+  - Correção do path WireMock para `GET /distribuitioncenters?itemId=...` com resposta estritamente em array de strings (IDs).
   - Guardas de idempotência no processamento assíncrono.
   
 - Observabilidade parcialmente avançada: métricas de pedidos, cache e seleção de CD implementadas.  
 - Próximo incremento: instrumentar cliente HTTP externo (latência, status) + cenários de falha no WireMock.
   
-Atualização (23/09/2025): Corrigido status consolidado para 11/12 concluídas (T10 em progresso) e marcado critérios de sucesso dos testes de integração como concluídos.
+Atualização (23/09/2025):
+
+- Enforçado novo contrato externo: consulta apenas por item (single-item) e resposta ESTRITAMENTE como array de IDs. Removidos endpoints de múltiplos itens e "todos os CDs".
+- Portas e adaptadores atualizados (HTTP e fallback dev); enriquecimento dos dados a partir do banco local usando os códigos retornados.
+- Stubs/mapeamentos WireMock e docker mapping atualizados para o novo endpoint `distribuitioncenters`.
+- Cache per-item aplicado no processamento de itens do pedido (manutenção da ordem de proximidade via PostGIS na aplicação).
 
 ## Próximos Passos
 
