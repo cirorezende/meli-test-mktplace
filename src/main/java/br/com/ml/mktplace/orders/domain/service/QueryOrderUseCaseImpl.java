@@ -38,11 +38,6 @@ public class QueryOrderUseCaseImpl implements QueryOrderUseCase {
                 .orElseThrow(() -> new OrderNotFoundException(orderId));
     }
 
-    @Override
-    public List<Order> getOrdersByCustomerId(String customerId) {
-        validateCustomerId(customerId);
-        return orderRepository.findByCustomerId(customerId);
-    }
 
     @Override
     public List<Order> getOrdersByStatus(OrderStatus status) {
@@ -126,9 +121,4 @@ public class QueryOrderUseCaseImpl implements QueryOrderUseCase {
         }
     }
     
-    private void validateCustomerId(String customerId) {
-        if (customerId == null || customerId.trim().isEmpty()) {
-            throw new IllegalArgumentException("Customer ID cannot be null or empty");
-        }
-    }
 }

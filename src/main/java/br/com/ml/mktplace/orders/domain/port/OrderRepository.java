@@ -55,12 +55,4 @@ public interface OrderRepository {
      */
     boolean existsById(String orderId);
     
-    /**
-     * Busca pedidos por ID do cliente
-     * 
-     * @param customerId o ID do cliente
-     * @return lista de pedidos do cliente
-     * @throws IllegalArgumentException se o customerId for null ou vazio
-     */
-    List<Order> findByCustomerId(String customerId);
 }

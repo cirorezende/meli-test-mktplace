@@ -2,6 +2,7 @@ package br.com.ml.mktplace.orders.adapter.outbound.persistence.repository;
 
 import br.com.ml.mktplace.orders.adapter.outbound.persistence.entity.OrderEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.lang.NonNull;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -16,14 +17,9 @@ import java.util.List;
 public interface JpaOrderEntityRepository extends JpaRepository<OrderEntity, String> {
 
     /**
-     * Find orders by customer ID.
-     */
-    List<OrderEntity> findByCustomerId(String customerId);
-
-    /**
      * Check if an order exists by ID.
      */
-    boolean existsById(String orderId);
+    boolean existsById(@NonNull String orderId);
 
     /**
      * Find orders within a certain distance from a point (using PostGIS).

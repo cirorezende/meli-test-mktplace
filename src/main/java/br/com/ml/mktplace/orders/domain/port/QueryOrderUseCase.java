@@ -31,14 +31,6 @@ public interface QueryOrderUseCase {
      */
     Order getOrderByIdRequired(String orderId);
     
-    /**
-     * Busca pedidos de um cliente específico
-     * 
-     * @param customerId identificador do cliente
-     * @return lista de pedidos do cliente
-     * @throws IllegalArgumentException se customerId for null ou vazio
-     */
-    List<Order> getOrdersByCustomerId(String customerId);
     
     /**
      * Busca pedidos por status

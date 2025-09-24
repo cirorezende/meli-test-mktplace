@@ -177,46 +177,6 @@ class QueryOrderUseCaseImplTest {
         verify(orderRepository).findById("NON-EXISTENT");
     }
     
-    @Test
-    @DisplayName("Should find orders by customer ID")
-    void shouldFindOrdersByCustomerId() {
-        // Given
-        List<Order> customerOrders = List.of(testOrder1, testOrder2);
-        when(orderRepository.findByCustomerId("CUSTOMER-123")).thenReturn(customerOrders);
-        
-        // When
-        List<Order> result = useCase.getOrdersByCustomerId("CUSTOMER-123");
-        
-        // Then
-        assertThat(result).hasSize(2);
-        assertThat(result).containsExactly(testOrder1, testOrder2);
-        verify(orderRepository).findByCustomerId("CUSTOMER-123");
-    }
-    
-    @Test
-    @DisplayName("Should return empty list when customer has no orders")
-    void shouldReturnEmptyListWhenCustomerHasNoOrders() {
-        // Given
-        when(orderRepository.findByCustomerId("NON-EXISTENT-CUSTOMER")).thenReturn(List.of());
-        
-        // When
-        List<Order> result = useCase.getOrdersByCustomerId("NON-EXISTENT-CUSTOMER");
-        
-        // Then
-        assertThat(result).isEmpty();
-        verify(orderRepository).findByCustomerId("NON-EXISTENT-CUSTOMER");
-    }
-    
-    @Test
-    @DisplayName("Should throw exception when customer ID is null")
-    void shouldThrowExceptionWhenCustomerIdIsNull() {
-        // When/Then
-        assertThatThrownBy(() -> useCase.getOrdersByCustomerId(null))
-            .isInstanceOf(IllegalArgumentException.class)
-            .hasMessage("Customer ID cannot be null or empty");
-        
-        verifyNoInteractions(orderRepository);
-    }
     
     @Test
     @DisplayName("Should find orders by status")

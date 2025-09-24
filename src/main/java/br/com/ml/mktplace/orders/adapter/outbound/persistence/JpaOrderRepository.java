@@ -56,17 +56,6 @@ public class JpaOrderRepository implements OrderRepository {
                 .orElseThrow(() -> new OrderNotFoundException("Order not found with id: " + orderId));
     }
 
-    @Override
-    public List<Order> findByCustomerId(String customerId) {
-        if (customerId == null || customerId.trim().isEmpty()) {
-            throw new IllegalArgumentException("Customer ID cannot be null or empty");
-        }
-        
-        List<OrderEntity> entities = jpaRepository.findByCustomerId(customerId);
-        return entities.stream()
-                .map(mapper::toDomain)
-                .toList();
-    }
 
     @Override
     public List<Order> findAll() {

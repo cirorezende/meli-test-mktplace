@@ -203,43 +203,6 @@ public class OrderController {
         }
     }
     
-    /**
-     * Get orders by customer ID
-     * GET /v1/orders/customer/{customerId}
-     */
-    @GetMapping("/customer/{customerId}")
-    public ResponseEntity<List<OrderResponse>> getOrdersByCustomer(
-            @PathVariable String customerId,
-            @RequestHeader(value = "X-Correlation-ID", required = false) String correlationId) {
-        
-        // Generate correlation ID if not provided
-        if (correlationId == null || correlationId.trim().isEmpty()) {
-            correlationId = UUID.randomUUID().toString();
-        }
-        
-        logger.info("Fetching orders for customer: {} - Correlation ID: {}", customerId, correlationId);
-        
-        try {
-            List<Order> orders = queryOrderUseCase.getOrdersByCustomerId(customerId);
-            List<OrderResponse> responses = orders.stream()
-                    .map(mapper::toResponse)
-                    .collect(Collectors.toList());
-            
-            HttpHeaders headers = buildResponseHeaders(correlationId);
-            
-            logger.info("Found {} orders for customer: {} - Correlation ID: {}", 
-                    orders.size(), customerId, correlationId);
-            
-            return ResponseEntity.ok()
-                    .headers(headers)
-                    .body(responses);
-                    
-        } catch (Exception e) {
-            logger.error("Failed to retrieve orders for customer: {} - Correlation ID: {}", 
-                    customerId, correlationId, e);
-            throw e; // Will be handled by GlobalExceptionHandler
-        }
-    }
     
     /**
      * Build standard response headers

@@ -5,16 +5,17 @@ Este diretório contém as interfaces que definem as portas (ports) da Arquitetu
 ## Portas de Saída (Outbound Ports)
 
 ### OrderRepository
+
 - **Responsabilidade**: Persistência de pedidos
-- **Métodos**: 
+- **Métodos**:
   - `save()`: Salva um pedido
   - `findById()`: Busca pedido por ID (Optional)
   - `getById()`: Busca pedido por ID (com exceção se não encontrado)
   - `findAll()`: Lista todos os pedidos
   - `existsById()`: Verifica existência
-  - `findByCustomerId()`: Busca pedidos por cliente
 
 ### DistributionCenterService
+
 - **Responsabilidade**: Consulta centros de distribuição via API externa
 - **Métodos**:
   - `findDistributionCentersByItem()`: CDs que possuem um item
@@ -22,6 +23,7 @@ Este diretório contém as interfaces que definem as portas (ports) da Arquitetu
   - Não há suporte para múltiplos itens em uma única requisição nem para buscar todos os CDs
 
 ### CacheService  
+
 - **Responsabilidade**: Operações de cache distribuído (Redis)
 - **Métodos**:
   - `get()`: Recupera valor do cache
@@ -32,6 +34,7 @@ Este diretório contém as interfaces que definem as portas (ports) da Arquitetu
   - `exists()`: Verifica existência de chave
 
 ### EventPublisher
+
 - **Responsabilidade**: Publicação de eventos de domínio
 - **Métodos**:
   - `publishOrderCreated()`: Evento de pedido criado
@@ -40,6 +43,7 @@ Este diretório contém as interfaces que definem as portas (ports) da Arquitetu
   - `publishDomainEvent()`: Evento genérico
 
 ### IDGenerator
+
 - **Responsabilidade**: Geração de identificadores únicos (ULID)
 - **Métodos**:
   - `generate()`: Gera um identificador único
@@ -49,12 +53,14 @@ Este diretório contém as interfaces que definem as portas (ports) da Arquitetu
 ## Portas de Entrada (Inbound Ports)
 
 ### CreateOrderUseCase
+
 - **Responsabilidade**: Criação de novos pedidos
 - **Métodos**:
   - `createOrder()`: Cria pedido com validações
 - **DTOs**: `CreateOrderCommand` (record com validações)
 
 ### ProcessOrderUseCase  
+
 - **Responsabilidade**: Processamento e roteamento de pedidos
 - **Métodos**:
   - `processOrder()`: Processa pedido com algoritmo de roteamento
@@ -63,11 +69,11 @@ Este diretório contém as interfaces que definem as portas (ports) da Arquitetu
 - **Exceções**: `ProcessOrderException` (específica do caso de uso)
 
 ### QueryOrderUseCase
+
 - **Responsabilidade**: Consultas e buscas de pedidos
 - **Métodos**:
   - `getOrderById()`: Busca por ID (Optional)
   - `getOrderByIdRequired()`: Busca por ID (com exceção)
-  - `getOrdersByCustomerId()`: Pedidos de um cliente
   - `getOrdersByStatus()`: Pedidos por status
   - `getAllOrders()`: Todos os pedidos
   - `orderExists()`: Verifica existência
@@ -77,14 +83,17 @@ Este diretório contém as interfaces que definem as portas (ports) da Arquitetu
 ## Exceções de Domínio
 
 ### OrderNotFoundException
+
 - Lançada quando um pedido não é encontrado
 - Contém o ID do pedido para contexto
 
 ### ExternalServiceException
+
 - Lançada quando há falha na comunicação com serviços externos
 - Contém nome do serviço para identificação
 
 ### ProcessOrderException (inner class)
+
 - Específica para falhas no processamento de pedidos
 - Contém ID do pedido e detalhes da falha
 
