@@ -1,33 +1,117 @@
-# meli-test-mktplace
+# Orders Service (meli-test-mktplace)
 
-## Order Processing Model (Async)
+Serviço de processamento de pedidos com pipeline assíncrono (event-driven) utilizando Postgres, Redis e Kafka. Agora a aplicação NÃO é mais executada via container local próprio: apenas a infraestrutura sobe via Docker Compose e a aplicação roda diretamente via IDE ou Maven.
 
-The application uses a pure asynchronous processing model:
+## Modelo Assíncrono Resumido
 
-- POST `/api/v1/orders` creates an order, publishes an `ORDER_CREATED` event, and returns `202 Accepted` with the initial state (`RECEIVED`).
-- Clients should poll `GET /api/v1/orders/{id}` or subscribe to events to observe state transitions (`RECEIVED` -> `PROCESSING` -> `PROCESSED` or `FAILED`).
+1. `POST /api/v1/orders` cria um pedido, publica evento `ORDER_CREATED` e retorna `202 Accepted` (status inicial `RECEIVED`).
+2. Processamento ocorre assíncronamente, atualizando estados: `RECEIVED -> PROCESSING -> PROCESSED` (ou `FAILED`).
+3. Cliente acompanha via `GET /api/v1/orders/{id}` ou observando eventos Kafka (`order.created` / `order.processed`).
 
-### Idempotency Guard
+### Idempotência
 
-To avoid duplicate side-effects from retries or duplicate events, the processing use case only performs work when the order status is `RECEIVED`. For any other non-final status, the call is a no-op and returns the current state. This ensures:
+Processamento só executa lógica pesada quando o pedido está em `RECEIVED`. Novas chamadas ou reentregas de eventos em estados intermediários não introduzem efeitos colaterais extra.
 
-- Only one external call to the Distribution Centers API per order lifecycle
-- Stable behavior under event replays and at-least-once delivery
+### Cache
 
-### Caching Strategy
+Redis armazena dados (ex.: disponibilidade de itens por centro de distribuição) usando chaves versionadas como `item-dc-availability:v2:{ITEM_ID}`. Falhas de cache não quebram o fluxo.
 
-- Distribution centers are cached in Redis using a versioned key: `distribution-centers:v2:{STATE}`.
-- Values are stored as a typed array (`DistributionCenter[]`) to avoid `List` polymorphic deserialization issues.
-- The model is resilient to unknown fields with Jackson annotations.
+## Como Executar Localmente
 
-## Running Locally
+Pre-requisitos:
 
-Use Docker Compose to bring up dependencies (Postgres, Redis, Kafka). Distribution Centers are now mocked in‑process (no external WireMock container required). Then run the app with Maven or your IDE.
+- Docker + Docker Compose
+- JDK 21
+- Maven 3.9+
 
-### Project Structure
+### 1. Subir Infraestrutura
 
-The project was flattened into a single Maven module (`orders`) for simplicity. Legacy `service/` module artifacts were removed; all source now lives under the standard `src/main` and `src/test` roots.
+No diretório raiz do projeto:
 
-## Testing
+```bash
+docker compose up -d postgres redis zookeeper kafka kafka-ui redis-insight pgadmin
+```
 
-Integration tests use Testcontainers (Kafka/Postgres/Redis). The Distribution Center data is generated deterministically/randomly by an in‑process service, removing the need for WireMock. The suite expects `202` on order creation and validates end-to-end async processing.
+Isso disponibiliza:
+
+- Postgres (localhost:5432)
+- Redis (localhost:6379)
+- Kafka (localhost:9092)
+- Kafka UI ([http://localhost:8081](http://localhost:8081))
+- Redis Insight ([http://localhost:5540](http://localhost:5540))
+- pgAdmin ([http://localhost:5050](http://localhost:5050))
+
+### 2. Rodar a Aplicação
+
+Via Maven (hot reload simples para dev):
+
+```bash
+mvn spring-boot:run
+```
+
+Ou execute a classe `br.com.ml.mktplace.orders.OrdersApplication` pela IDE (perfil padrão `dev` se existir `application-dev.properties`).
+
+### 3. Testar Fluxo Básico
+
+Criar pedido:
+
+```bash
+curl -X POST http://localhost:8080/api/v1/orders \
+  -H 'Content-Type: application/json' \
+  -d '{
+        "customerId": "customer-1",
+        "items": [{"itemId": "SKU123", "quantity": 1}],
+        "deliveryAddress": {
+          "street": "Rua A",
+          "number": "100",
+          "city": "São Paulo",
+          "state": "SP",
+          "country": "BR",
+          "zipCode": "01000-000"
+        }
+      }'
+```
+
+Consultar status:
+
+```bash
+curl http://localhost:8080/api/v1/orders/{ORDER_ID}
+```
+
+### Parar Infraestrutura
+
+```bash
+docker compose down
+```
+
+## Estrutura do Projeto
+
+Projeto single-module (`orders`). Código fonte: `src/main/java`, testes: `src/test/java`. Sem scripts auxiliares (pasta `scripts/` removida). Dockerfile removido — build local é direto via Maven.
+
+## Testes
+
+```bash
+mvn clean verify
+```
+
+Utiliza Testcontainers para Kafka/Postgres/Redis – não requer docker compose rodando para testes de integração (os containers são gerenciados pelos testes). Para rodar a aplicação manual + compose simultaneamente, não há conflito de portas com os containers de teste (eles sobem em portas dinâmicas).
+
+## Observabilidade
+
+- Actuator: `http://localhost:8080/actuator/health`
+- Métricas (Prometheus): `http://localhost:8080/actuator/prometheus`
+- Logs estruturados (Logstash encoder)
+
+## Notas de Migração
+
+- Serviço `orders-app` removido do `docker-compose.yml`.
+- `Dockerfile` removido: executar apenas via JVM local.
+- Mock externo de Centros de Distribuição substituído por mock in-process.
+
+## Próximos Ajustes (Opcional)
+
+- Atualizar/documentar `docs/docker-guide.md` para refletir ausência do container da aplicação.
+- Criar perfis específicos (`application-local.properties`) caso queira separar parâmetros de execução vs teste.
+
+---
+Qualquer dúvida ou sugestão de melhoria futura (ex.: reintroduzir imagem para CI/CD), abra uma issue.

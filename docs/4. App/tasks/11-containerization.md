@@ -56,6 +56,8 @@ Criar Dockerfile otimizado, configurações de deploy e scripts necessários par
 - ✅ **run.sh / run.ps1**: Gerenciamento do ambiente completo
 - ✅ **Suporte Windows/Linux**: Scripts para ambas plataformas
 
+> [DEPRECATED] Este plano de containerização foi mantido apenas para histórico. A estratégia ativa agora: subir somente infraestrutura via `docker compose` e executar a aplicação localmente com `mvn spring-boot:run`. Referir-se ao `README.md` atualizado e ao documento `docs/docker-guide.md` (seção deprecada) para detalhes.
+
 ## Dockerfile Multi-stage
 
 ### Stage 1: Build

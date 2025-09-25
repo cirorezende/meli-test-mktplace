@@ -104,8 +104,7 @@ Nenhum serviço externo para Centros de Distribuição (in-process mock).
 ├── scripts/
 │   ├── build.sh / build.ps1       # Build scripts
 │   └── run.sh / run.ps1           # Runtime management
-└── src/main/resources/
-    └── application-docker.properties  # Container-specific config
+└── src/main/resources/ (arquivo histórico `application-docker.properties` foi removido em 2025)
 ```
 
 ## 🔧 Configuration
@@ -113,322 +112,129 @@ Nenhum serviço externo para Centros de Distribuição (in-process mock).
 ### Environment Variables
 
 The application supports the following environment variables for configuration:
+ 
+## Deprecated: Full Application Containerization Guide
+
+This document used to describe how to run the application itself inside Docker (service `orders-app` + supporting infra). The project has since moved to a simpler developer workflow:
+
+1. Start ONLY infrastructure services with `docker compose` (PostgreSQL, Redis, Kafka, pgAdmin, Redis Insight, Kafka UI).
+2. Run the Spring Boot application locally via: `mvn spring-boot:run` (or your IDE).
+
+The application image / Dockerfile and helper scripts were removed. This file is kept for historical reference and has been MINIMIZED to only list currently relevant container services. Obsolete sections were removed.
+
+For up‑to‑date instructions see the root `README.md` (section "Como Executar").
+
+---
+
+## Infraestrutura Ativa (Compose)
+
+| Serviço       | Porta | Uso Principal | UI / Observabilidade |
+|---------------|-------|---------------|----------------------|
+| PostgreSQL    | 5432  | Banco + PostGIS | pgAdmin (5050) |
+| Redis         | 6379  | Cache          | Redis Insight (5540) |
+| Kafka         | 9092  | Mensageria     | Kafka UI (8081) |
+| Zookeeper     | 2181  | Coordenação Kafka | - |
+| pgAdmin       | 5050  | Admin Postgres | [http://localhost:5050](http://localhost:5050) |
+| Redis Insight | 5540  | Admin Redis    | [http://localhost:5540](http://localhost:5540) |
+| Kafka UI      | 8081  | Monitor Kafka  | [http://localhost:8081](http://localhost:8081) |
+
+Credenciais padrão (dev):
+
+Postgres: user `orders_user` / pass `orders_pass` / db `orders_db`  
+Redis: password `redis_pass`
+
+Nota: O antigo arquivo `application-docker.properties` foi removido (não há mais perfil `docker` ativo).
+
+---
+
+## Como Subir Infraestrutura
 
 ```bash
-# Database
-DB_HOST=postgres
+docker compose up -d            # sobe todos os serviços de infraestrutura
+docker compose ps               # lista status
+docker compose logs -f postgres # exemplo de logs
+```
+
+Parar e (opcional) remover volumes:
+
+```bash
+docker compose down             # para serviços preservando dados
+docker compose down --volumes   # ATENÇÃO: apaga dados (Postgres/Redis)
+```
+
+---
+
+## Executando a Aplicação (Local JVM)
+
+Em outro terminal:
+
+```bash
+mvn clean spring-boot:run -Dspring-boot.run.profiles=dev
+```
+
+Ou rode a classe principal via IDE. A aplicação expõe:
+
+- API REST: [http://localhost:8080/api/orders](http://localhost:8080/api/orders) (exemplo)
+- Actuator: [http://localhost:8080/api/actuator/health](http://localhost:8080/api/actuator/health)
+- (Se habilitado) Swagger UI: /api/swagger-ui.html
+
+---
+
+## Verificações Rápidas
+
+```bash
+curl http://localhost:8080/api/actuator/health
+curl http://localhost:8080/api/actuator/info
+```
+
+Ver banco:
+
+```bash
+docker compose exec postgres psql -U orders_user -d orders_db -c "SELECT NOW();"
+```
+
+Ver Redis:
+
+```bash
+docker compose exec redis redis-cli -a redis_pass INFO memory | head -n 15
+```
+
+Tópicos Kafka (após subir aplicação que cria/usa tópicos):
+
+```bash
+docker compose exec kafka kafka-topics.sh --bootstrap-server localhost:9092 --list
+```
+
+---
+
+## Variáveis de Ambiente Relevantes (Perfil dev)
+
+```bash
+DB_HOST=localhost
 DB_PORT=5432
 DB_NAME=orders_db
 DB_USER=orders_user
 DB_PASSWORD=orders_pass
-
-# Redis
-REDIS_HOST=redis
+REDIS_HOST=localhost
 REDIS_PORT=6379
 REDIS_PASSWORD=redis_pass
-
-# Kafka
-KAFKA_BROKERS=kafka:9092
-
-# External APIs (removed – DC API now in-process)
-# DISTRIBUTION_CENTERS_API_URL=<removed>
-
-# Application
-SPRING_PROFILES_ACTIVE=docker
-SERVER_PORT=8080
-MANAGEMENT_SERVER_PORT=8080
+KAFKA_BROKERS=localhost:9092
+SPRING_PROFILES_ACTIVE=dev
 ```
 
-### Application Profiles
-
-- **docker**: Optimized for container deployment
-- **dev**: Development with external database
-- **prod**: Production configuration
-- **staging**: Staging environment
-
-## 🚀 Deployment Commands
-
-### Build Commands
-
-```bash
-# Build application image
-docker-compose build orders-app
-
-# Build with no cache
-docker-compose build --no-cache orders-app
-
-# Pull latest base images
-docker-compose pull
-```
-
-### Runtime Commands
-
-```bash
-# Start all services
-docker-compose up -d
-
-# Start specific service
-docker-compose up -d orders-app
-
-# Scale application instances
-docker-compose up -d --scale orders-app=3
-
-# View logs
-docker-compose logs -f orders-app
-docker-compose logs --tail=100 postgres
-
-# Execute commands in containers
-docker-compose exec orders-app bash
-docker-compose exec postgres psql -U orders_user -d orders_db
-docker-compose exec redis redis-cli -a redis_pass
-```
-
-### Maintenance Commands
-
-```bash
-# Restart services
-docker-compose restart orders-app
-
-# Stop all services
-docker-compose down
-
-# Remove volumes (data loss!)
-docker-compose down --volumes
-
-# Clean up system
-docker system prune -f
-docker volume prune -f
-```
-
-## 📊 Monitoring & Health Checks
-
-### Application Health
-
-```bash
-# Health check endpoint
-curl http://localhost:8080/api/actuator/health
-
-# Application info
-curl http://localhost:8080/api/actuator/info
-
-# Metrics
-curl http://localhost:8080/api/actuator/metrics
-```
-
-### Database Health
-
-```bash
-# Connect to PostgreSQL
-docker-compose exec postgres psql -U orders_user -d orders_db
-
-# Check PostGIS extension
-SELECT PostGIS_Version();
-```
-
-### Cache Health
-
-```bash
-# Connect to Redis
-docker-compose exec redis redis-cli -a redis_pass
-
-# Check cache status
-INFO memory
-```
-
-## 🔍 Troubleshooting
-
-### Common Issues
-
-#### Port Conflicts
-
-```bash
-# Check port usage
-netstat -tulpn | grep :8080
-
-# Use different ports in docker-compose.yml
-services:
-  orders-app:
-    ports:
-      - "8081:8080"  # Map to different host port
-```
-
-#### Memory Issues
-
-```bash
-# Increase Docker memory limit (4GB+)
-# Add to docker-compose.yml
-services:
-  orders-app:
-    deploy:
-      resources:
-        limits:
-          memory: 2G
-```
-
-#### Database Connection Issues
-
-```bash
-# Check database logs
-docker-compose logs postgres
-
-# Verify database initialization
-docker-compose exec postgres psql -U orders_user -d orders_db -c "\dt"
-```
-
-#### Application Startup Issues
-
-```bash
-# Check application logs
-docker-compose logs -f orders-app
-
-# Debug with interactive session
-docker-compose run --rm orders-app bash
-```
-
-### Log Analysis
-
-```bash
-# Application logs with timestamps
-docker-compose logs -f -t orders-app
-
-# Search for errors
-docker-compose logs orders-app 2>&1 | grep ERROR
-
-# Export logs to file
-docker-compose logs orders-app > app.log 2>&1
-```
-
-## 🧪 Testing
-
-### Integration Tests
-
-```bash
-# Run tests against containers
-./scripts/run.sh start
-curl -X POST http://localhost:8080/api/orders \
-  -H "Content-Type: application/json" \
-  -d '{"customerId":1,"items":[{"productId":1,"quantity":2}]}'
-```
-
-### Performance Testing
-
-```bash
-# Load test with curl
-for i in {1..100}; do
-  curl -X GET http://localhost:8080/api/orders &
-done
-wait
-```
-
-## 📈 Performance Optimization
-
-### JVM Tuning
-
-The Dockerfile includes optimized JVM settings:
-
-```dockerfile
-ENV JAVA_OPTS="-Xmx1536m -Xms512m -XX:+UseG1GC -XX:MaxGCPauseMillis=100"
-```
-
-### Database Optimization
-
-- Connection pooling (HikariCP)
-- Prepared statement caching
-- PostGIS spatial indexing
-
-### Cache Strategy
-
-- Redis for session storage
-- Application-level caching
-- Database query result caching
-
-## 🔒 Security
-
-### Container Security
-
-- Non-root user execution
-- Minimal base image (Amazon Corretto)
-- Security scanning with Trivy
-
-### Network Security
-
-- Internal Docker network
-- No unnecessary port exposure
-- Environment-based secrets
-
-### Data Security
-
-- Database credentials via environment variables
-- Redis password protection
-- TLS/SSL termination at load balancer
-
-## � Troubleshooting
-
-### Application Issues
-
-**Symptoms**: HTTP 500 errors on all endpoints, including health checks
-**Root Cause**: Application treating REST endpoints as static resources
-**Current Status**: Under investigation
-
-```bash
-# Check application logs for errors
-docker logs orders-app --tail 50
-
-# Verify container health status
-docker ps --format "table {{.Names}}\t{{.Status}}"
-
-# Restart application container if needed
-docker-compose restart orders-app
-```
-
-**Known Issues**:
-
-- All API endpoints (including `/api/actuator/*`) return HTTP 500
-- Spring MVC not properly routing requests to controllers
-- Requests being handled by ResourceHttpRequestHandler instead of REST controllers
-
-**Workaround**: Container infrastructure is healthy, application requires code-level debugging
-
-### Infrastructure Issues
-
-**Database Connection**:
-
-```bash
-# Test database connectivity
-docker-compose exec postgres pg_isready -U orders_user -d orders_db
-```
-
-**Redis Connection**:
-
-```bash
-# Test Redis connectivity  
-docker-compose exec redis redis-cli ping
-```
-
-**Kafka Connection**:
-
-```bash
-# Check Kafka status
-docker-compose exec kafka kafka-topics.sh --bootstrap-server localhost:9092 --list
-```
-
-## �📚 Additional Resources
-
-- [Spring Boot Docker Guide](https://spring.io/guides/topicals/spring-boot-docker/)
-- [Docker Compose Best Practices](https://docs.docker.com/compose/production/)
-- [PostgreSQL Docker Hub](https://hub.docker.com/_/postgres)
-- [Redis Docker Hub](https://hub.docker.com/_/redis)
-
-## 🆘 Support
-
-For issues related to containerization:
-
-1. Check this documentation
-2. Review Docker Compose logs
-3. Verify system requirements
-4. Check port availability
-5. Validate Docker installation
+Quando executado com Testcontainers (testes de integração) essas variáveis não são necessárias: os containers efêmeros são gerenciados automaticamente pelos testes.
 
 ---
 
-**Note**: This containerized environment is designed for development and testing. For production deployment, consider using Kubernetes or similar container orchestration platforms with appropriate security, monitoring, and scaling configurations.
+## Histórico (Resumo)
+
+Versões anteriores deste documento descreviam:  
+- Dockerfile multi-stage para a aplicação  
+- Scripts `build.sh` / `run.sh`  
+- Serviço `orders-app` no compose  
+Todos removidos para simplificar o fluxo local (infra compartilhada + execução direta na JVM).
+
+---
+
+Se encontrar referência antiga a `orders-app` ou `application-docker.properties`, considerar remover ou atualizar. Abra um PR com a limpeza adicional.
+

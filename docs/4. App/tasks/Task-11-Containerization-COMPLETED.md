@@ -1,4 +1,6 @@
-# Task 11 - Containerization - Implementation Summary
+# Task 11 - Containerization - Implementation Summary (Historical / Deprecated)
+
+> DEPRECATION NOTE (2025): A abordagem de executar a aplicação dentro do container `orders-app` foi substituída. Hoje o fluxo aprovado é: subir somente infraestrutura (Postgres, Redis, Kafka etc.) via `docker compose` e executar a aplicação localmente com `mvn spring-boot:run`. O conteúdo abaixo permanece apenas como registro da implementação original. Não atualizar para novos fluxos.
 
 ## ✅ Task Status: COMPLETED
 
@@ -73,9 +75,9 @@ Task 11 has been successfully implemented, providing a comprehensive Docker-base
 - **No External Dependencies**: Everything runs locally
 - **Development Data**: Pre-configured with sample distribution centers
 
-## 🚀 Usage Instructions
+## 🚀 Usage Instructions (Deprecado)
 
-### Quick Start (Windows)
+### Quick Start (Windows) [OBSOLETO]
 
 ```powershell
 # Build the application image
@@ -91,7 +93,7 @@ Task 11 has been successfully implemented, providing a comprehensive Docker-base
 .\scripts\run.ps1 logs orders-app
 ```
 
-### Quick Start (Linux/Mac)
+### Quick Start (Linux/Mac) [OBSOLETO]
 
 ```bash
 # Build the application image
@@ -107,7 +109,7 @@ Task 11 has been successfully implemented, providing a comprehensive Docker-base
 ./scripts/run.sh logs orders-app
 ```
 
-### Service Endpoints
+### Service Endpoints (Histórico)
 
 - **Orders API**: <http://localhost:8080>
 - **API Documentation**: <http://localhost:8080/swagger-ui.html>
@@ -164,7 +166,7 @@ Task 11 has been successfully implemented, providing a comprehensive Docker-base
 - Error tracking and debugging support
 - Performance metrics collection
 
-## 📚 Documentation
+## 📚 Documentation (Histórico)
 
 ### Comprehensive Guides
 
