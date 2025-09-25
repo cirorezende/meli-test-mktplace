@@ -59,16 +59,16 @@ public class OrderController {
     @Operation(summary = "Create a new order", 
            description = "Creates an order and publishes ORDER_CREATED event for asynchronous processing. The returned status will usually be RECEIVED; clients should poll or subscribe to events for completion.")
     @io.swagger.v3.oas.annotations.parameters.RequestBody(
-        description = "Order creation payload (customerId and items only)",
+        description = "Order creation payload including deliveryAddress (client MUST NOT send coordinates; service resolves them by geocoding)",
         required = true,
         content = @Content(
             mediaType = "application/json",
             schema = @Schema(implementation = OrderRequest.class),
             examples = {
                 @ExampleObject(
-                    name = "MinimalOrder",
-                    summary = "Valid order with two items",
-                    value = "{\n  \"customerId\": \"CUST-12345\",\n  \"items\": [\n    { \"itemId\": \"ITEM-001\", \"quantity\": 2 },\n    { \"itemId\": \"ITEM-002\", \"quantity\": 1 }\n  ]\n}"
+                    name = "OrderWithAddress",
+                    summary = "Order with deliveryAddress (DO NOT send coordinates field)",
+                    value = "{\n  \"customerId\": \"CUST-12345\",\n  \"items\": [\n    { \"itemId\": \"ITEM-001\", \"quantity\": 2 },\n    { \"itemId\": \"ITEM-002\", \"quantity\": 1 }\n  ],\n  \"deliveryAddress\": {\n    \"street\": \"Av. Paulista\",\n    \"number\": \"1000\",\n    \"city\": \"São Paulo\",\n    \"state\": \"SP\",\n    \"country\": \"BR\",\n    \"zipCode\": \"01310-100\"\n  }\n}"
                 )
             }
         )
@@ -94,6 +94,13 @@ public class OrderController {
                 correlationId, request.getCustomerId(), request.getItems().size());
         
         try {
+            // Business rule: client MUST NOT send coordinates; service will geocode.
+            if (request.getDeliveryAddress() != null && request.getDeliveryAddress().getCoordinates() != null) {
+                logger.warn("Rejecting order creation with client-supplied coordinates - Correlation ID: {}", correlationId);
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                        .headers(buildResponseHeaders(correlationId))
+                        .body(null);
+            }
             // Convert DTO to domain object
             Order order = mapper.toDomain(request, null);
             
