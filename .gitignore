@@ -1,4 +1,4 @@
 target/*
 logs/*
-logs/application.log
-docker-compose copy.yml
+dist/logs/*
+maven-debug.log
