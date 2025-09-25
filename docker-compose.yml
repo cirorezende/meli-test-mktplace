@@ -112,6 +112,11 @@ services:
     volumes:
       - ./docker/wiremock/mappings:/home/wiremock/mappings
       - ./docker/wiremock/__files:/home/wiremock/__files
+      # Monta o jar da extensão (gerado após 'mvn -pl wiremock-extensions package')
+      - ./wiremock-extensions/target/wiremock-extensions-0.0.1-SNAPSHOT.jar:/var/wiremock/extensions/wiremock-extensions.jar:ro
+    command:
+      - "--extensions"
+      - "br.com.ml.mktplace.wiremock.RandomDistributionCentersTransformer"
     networks:
       - orders-network
     restart: unless-stopped

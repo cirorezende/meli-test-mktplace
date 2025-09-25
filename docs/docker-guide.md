@@ -13,6 +13,48 @@ This document provides comprehensive instructions for running the Orders Process
 
 ### Running the Application
 
+#### IMPORTANT: Build WireMock Extension (Random Distribution Centers)
+
+O mock de Centros de Distribuição usa uma extensão WireMock customizada (`RandomDistributionCentersTransformer`) para retornar entre 1 e 5 CDs aleatórios a cada requisição.
+
+Antes de subir os containers, gere o jar da extensão para que o container `distribution-centers-api` consiga carregá-la.
+
+Passos rápidos:
+
+```bash
+# 1. Gerar somente a extensão (mais rápido)
+mvn -pl wiremock-extensions -am package
+
+# (Opcional) build completo
+mvn clean package
+
+# 2. Verificar se o jar existe
+ls wiremock-extensions/target/wiremock-extensions-0.0.1-SNAPSHOT.jar
+
+# 3. Subir apenas o mock (ou tudo)
+docker compose up -d distribution-centers-api
+
+# 4. Testar (executar várias vezes e observar tamanhos diferentes 1..5)
+curl "http://localhost:3000/distribuitioncenters?itemId=TEST"
+```
+
+Se esquecer de gerar o jar:
+
+- WireMock pode subir sem o transformer (lista fixa ou erro de extensão)
+- Solução: gerar jar e reiniciar: `docker compose restart distribution-centers-api`
+
+Debug rápido:
+
+```bash
+docker logs -f distribution-centers-api | grep random-distribution-centers || true
+```
+
+Critérios de sucesso:
+
+- Arrays variam entre 1 e 5 elementos
+- Nunca vazio
+- Sem duplicados na mesma resposta
+
 #### Windows (PowerShell)
 
 ```powershell
