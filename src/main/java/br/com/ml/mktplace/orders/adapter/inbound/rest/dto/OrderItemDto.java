@@ -27,9 +27,17 @@ public class OrderItemDto {
         @JsonProperty("code")
         public String code;
         @JsonProperty("distanceKm")
-        public double distanceKm;
+        @Schema(description = "Distância em quilômetros com duas casas decimais", example = "12.34")
+        public java.math.BigDecimal distanceKm;
         public NearbyDcDto() {}
-        public NearbyDcDto(String code, double distanceKm) { this.code = code; this.distanceKm = distanceKm; }
+        public NearbyDcDto(String code, double distanceKm) { 
+            this.code = code; 
+            this.distanceKm = java.math.BigDecimal.valueOf(distanceKm).setScale(2, java.math.RoundingMode.HALF_UP); 
+        }
+        public NearbyDcDto(String code, java.math.BigDecimal distanceKm) {
+            this.code = code;
+            this.distanceKm = distanceKm == null ? null : distanceKm.setScale(2, java.math.RoundingMode.HALF_UP);
+        }
     }
     
     // Constructors

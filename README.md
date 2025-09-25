@@ -4,7 +4,7 @@ Serviço de processamento de pedidos com pipeline assíncrono (event-driven) uti
 
 ## Modelo Assíncrono Resumido
 
-1. `POST /api/v1/orders` cria um pedido, publica evento `ORDER_CREATED` e retorna `202 Accepted` (status inicial `RECEIVED`).
+1. `POST /api/v1/orders` cria um pedido, publica evento `ORDER_CREATED` e retorna `201 Created` (status inicial `RECEIVED` + header `Location`).
 2. Processamento ocorre assíncronamente, atualizando estados: `RECEIVED -> PROCESSING -> PROCESSED` (ou `FAILED`).
 3. Client da API acompanha via `GET /api/v1/orders/{id}` ou observando eventos Kafka (`order.created` / `order.processed`).
 

@@ -53,7 +53,7 @@ public class OrderEventConsumptionIT extends BaseIntegrationTest {
 
         // Act - cria pedido (deverá disparar eventos)
     ResponseEntity<OrderResponse> createResponse = restTemplate.postForEntity("/v1/orders", new HttpEntity<>(request, headers), OrderResponse.class);
-    assertThat(createResponse.getStatusCode()).isEqualTo(HttpStatus.ACCEPTED);
+    assertThat(createResponse.getStatusCode()).isEqualTo(HttpStatus.CREATED);
         OrderResponse created = createResponse.getBody();
         assertThat(created).isNotNull();
         String orderId = created != null ? created.getId() : null;

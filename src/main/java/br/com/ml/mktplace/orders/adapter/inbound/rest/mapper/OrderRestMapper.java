@@ -82,7 +82,7 @@ public class OrderRestMapper {
     private OrderItemDto toDto(OrderItem orderItem) {
         // Mapear lista de CDs disponíveis mantendo a ordem do menos distante para o mais distante
         java.util.List<OrderItemDto.NearbyDcDto> nearbyDtos = orderItem.getAvailableDistributionCenters().stream()
-                .map(n -> new OrderItemDto.NearbyDcDto(n.code(), n.distanceKm()))
+                .map(n -> new OrderItemDto.NearbyDcDto(n.code(), java.math.BigDecimal.valueOf(n.distanceKm()).setScale(2, java.math.RoundingMode.HALF_UP)))
                 .toList();
 
         return new OrderItemDto(orderItem.getItemId(), orderItem.getQuantity(), nearbyDtos);

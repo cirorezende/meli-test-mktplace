@@ -50,7 +50,7 @@ public class OrderEventPublishingIT extends BaseIntegrationTest {
     ResponseEntity<OrderResponse> createResponse = restTemplate.postForEntity("/v1/orders", new HttpEntity<>(request, headers), OrderResponse.class);
 
         // Assert
-    assertThat(createResponse.getStatusCode()).isEqualTo(HttpStatus.ACCEPTED);
+    assertThat(createResponse.getStatusCode()).isEqualTo(HttpStatus.CREATED);
     OrderResponse body = createResponse.getBody();
     assertThat(body).isNotNull();
     assertThat(body != null ? body.getId() : null).isNotBlank();

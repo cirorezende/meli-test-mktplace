@@ -74,11 +74,12 @@ public class OrderController {
         )
     )
     @ApiResponses(value = {
-        @ApiResponse(responseCode = "202", description = "Order accepted for asynchronous processing",
-                        content = @Content(schema = @Schema(implementation = OrderResponse.class))),
-            @ApiResponse(responseCode = "400", description = "Invalid request data"),
-            @ApiResponse(responseCode = "422", description = "Order processing failed"),
-            @ApiResponse(responseCode = "503", description = "External service unavailable")
+    @ApiResponse(responseCode = "201", description = "Order created and accepted for asynchronous processing (initial status RECEIVED). Location header points to the new resource.",
+        content = @Content(schema = @Schema(implementation = OrderResponse.class),
+            examples = @ExampleObject(name = "OrderCreatedResponse", summary = "Order created response", value = "{\n  \"id\": \"01HKH1Z9XAY2E6M9YB1Q4T0G2P\",\n  \"customerId\": \"CUST-12345\",\n  \"status\": \"RECEIVED\",\n  \"items\": [ { \"itemId\": \"ITEM-001\", \"quantity\": 2, \"availableDistributionCenters\": [ { \"code\": \"SP-001\", \"distanceKm\": 5.12 }, { \"code\": \"RJ-001\", \"distanceKm\": 32.47 } ] }, { \"itemId\": \"ITEM-002\", \"quantity\": 1, \"availableDistributionCenters\": [ { \"code\": \"MG-001\", \"distanceKm\": 12.30 } ] } ],\n  \"deliveryAddress\": { \"street\": \"Av. Paulista\", \"number\": \"1000\", \"city\": \"São Paulo\", \"state\": \"SP\", \"country\": \"BR\", \"zipCode\": \"01310-100\" },\n  \"createdAt\": \"2025-09-24T10:15:30Z\"\n}"))),
+        @ApiResponse(responseCode = "400", description = "Invalid request data"),
+        @ApiResponse(responseCode = "422", description = "Order processing failed"),
+        @ApiResponse(responseCode = "503", description = "External service unavailable")
     })
     public ResponseEntity<OrderResponse> processOrder(
             @Valid @RequestBody OrderRequest request,
@@ -120,9 +121,12 @@ public class OrderController {
         logger.info("Order accepted for async processing - ID: {}, Current Status: {}, Correlation ID: {}", 
             createdOrder.getId(), createdOrder.getStatus(), correlationId);
             
-        return ResponseEntity.status(HttpStatus.ACCEPTED)
-                    .headers(headers)
-                    .body(response);
+    // Build Location header for the new resource
+    headers.set(HttpHeaders.LOCATION, String.format("/v1/orders/%s", createdOrder.getId()));
+
+    return ResponseEntity.status(HttpStatus.CREATED)
+        .headers(headers)
+        .body(response);
                     
         } catch (Exception e) {
             logger.error("Failed to process order - Correlation ID: {}", correlationId, e);

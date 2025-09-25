@@ -15,7 +15,7 @@ import java.util.List;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
- * Valida comportamento de cache em arquitetura 100% assíncrona (POST retorna 202 + status RECEIVED):
+ * Valida comportamento de cache em arquitetura 100% assíncrona (POST retorna 201 + status inicial RECEIVED):
  * Duas criações de pedidos com mesmo item e mesmo estado devem resultar em apenas
  * UMA chamada HTTP ao endpoint externo /distribution-centers na primeira execução.
  * A segunda deve reutilizar o cache (chave versionada por estado) e não gerar nova chamada.
@@ -39,7 +39,7 @@ public class DistributionCenterCachingIT extends BaseIntegrationTest {
         headers.setContentType(MediaType.APPLICATION_JSON);
 
     ResponseEntity<OrderResponse> r1 = restTemplate.postForEntity("/v1/orders", new HttpEntity<>(req1, headers), OrderResponse.class);
-    assertThat(r1.getStatusCode()).isEqualTo(HttpStatus.ACCEPTED);
+    assertThat(r1.getStatusCode()).isEqualTo(HttpStatus.CREATED);
 
     // Aguarda primeiro pedido atingir estado final para evitar condições de concorrência
     OrderResponse firstBody = r1.getBody();
@@ -49,7 +49,7 @@ public class DistributionCenterCachingIT extends BaseIntegrationTest {
     awaitOrderProcessed(firstOrderId);
 
     ResponseEntity<OrderResponse> r2 = restTemplate.postForEntity("/v1/orders", new HttpEntity<>(req2, headers), OrderResponse.class);
-    assertThat(r2.getStatusCode()).isEqualTo(HttpStatus.ACCEPTED);
+    assertThat(r2.getStatusCode()).isEqualTo(HttpStatus.CREATED);
 
         // Endpoint externo removido: validação indireta (ambas as criações 202 e processamento do primeiro concluído) substitui verificação de chamadas HTTP.
     }
