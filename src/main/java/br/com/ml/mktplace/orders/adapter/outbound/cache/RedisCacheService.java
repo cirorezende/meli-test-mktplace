@@ -55,21 +55,64 @@ public class RedisCacheService implements CacheService {
             }
             
             T value;
-            if (valueType.isInstance(cached)) {
+            // Specialized handling for collection / array structures to avoid Jackson default typing pitfalls
+            if (valueType == java.util.List.class) {
+                // Special handling for List values (we serialize them explicitly as JSON String to avoid polymorphic typing issues)
+                if (cached instanceof java.util.List<?>) {
+                    @SuppressWarnings("unchecked")
+                    T casted = (T) cached;
+                    value = casted;
+                } else if (cached instanceof String s) {
+                    // Parse JSON array -> List
+                    @SuppressWarnings("unchecked")
+                    T parsed = (T) objectMapper.readValue(s, java.util.List.class);
+                    value = parsed;
+                } else {
+                    @SuppressWarnings("unchecked")
+                    T converted = (T) objectMapper.convertValue(cached, java.util.List.class);
+                    value = converted;
+                }
+            } else if (valueType.isArray()) {
+                Class<?> componentType = valueType.getComponentType();
+                Object arrayValue;
+                if (cached instanceof String s) {
+                    // Direct JSON -> array
+                    arrayValue = objectMapper.readValue(s, valueType);
+                } else if (cached != null && cached.getClass().isArray()) {
+                    arrayValue = cached; // Already an array of something
+                } else if (cached instanceof java.util.Collection<?> coll) {
+                    // Convert collection elements to desired component type
+                    Object[] intermediate = coll.toArray();
+                    Object newArray = java.lang.reflect.Array.newInstance(componentType, intermediate.length);
+                    for (int i = 0; i < intermediate.length; i++) {
+                        Object elem = intermediate[i];
+                        if (elem != null && !componentType.isInstance(elem)) {
+                            elem = objectMapper.convertValue(elem, componentType);
+                        }
+                        java.lang.reflect.Array.set(newArray, i, elem);
+                    }
+                    arrayValue = newArray;
+                } else {
+                    // Fallback convert
+                    arrayValue = objectMapper.convertValue(cached, valueType);
+                }
+                @SuppressWarnings("unchecked")
+                T casted = (T) arrayValue;
+                value = casted;
+            } else if (valueType.isInstance(cached)) {
                 value = valueType.cast(cached);
-            } else if (cached instanceof String) {
-                // Try to deserialize from JSON
-                value = objectMapper.readValue((String) cached, valueType);
+            } else if (cached instanceof String s) {
+                value = objectMapper.readValue(s, valueType);
             } else {
-                // Convert using ObjectMapper
                 value = objectMapper.convertValue(cached, valueType);
             }
-            
-            logger.debug("Cache hit for key: {}", key);
-            return Optional.of(value);
+
+            logger.debug("Cache hit for key: {} (type={})", key, valueType.getSimpleName());
+            return Optional.ofNullable(value);
             
         } catch (Exception e) {
-            logger.error("Failed to get value from cache for key: {}", key, e);
+            logger.warn("Cache deserialization failed for key {} - evicting and returning empty. Cause: {}", key, e.getMessage());
+            try { redisTemplate.delete(key); } catch (Exception ignored) { }
             return Optional.empty();
         }
     }
@@ -90,8 +133,22 @@ public class RedisCacheService implements CacheService {
         
         try {
             Duration actualTtl = ttl != null ? ttl : DEFAULT_TTL;
-            redisTemplate.opsForValue().set(key, value, actualTtl);
-            logger.debug("Cached value for key: {} with TTL: {}", key, actualTtl);
+
+            if (value instanceof java.util.List<?> list) {
+                // Serialize list explicitly as JSON String to avoid GenericJackson2JsonRedisSerializer polymorphic array issues
+                String json = objectMapper.writeValueAsString(list);
+                redisTemplate.opsForValue().set(key, json, actualTtl);
+                logger.debug("Cached LIST value for key: {} ({} elements) with TTL: {}", key, list.size(), actualTtl);
+            } else if (value.getClass().isArray()) {
+                // Serialize arrays explicitly as JSON as well (e.g., String[])
+                String json = objectMapper.writeValueAsString(value);
+                int length = java.lang.reflect.Array.getLength(value);
+                redisTemplate.opsForValue().set(key, json, actualTtl);
+                logger.debug("Cached ARRAY value for key: {} ({} elements, type={}[]) with TTL: {}", key, length, value.getClass().getComponentType().getSimpleName(), actualTtl);
+            } else {
+                redisTemplate.opsForValue().set(key, value, actualTtl);
+                logger.debug("Cached value for key: {} with TTL: {}", key, actualTtl);
+            }
             
         } catch (Exception e) {
             logger.error("Failed to cache value for key: {}", key, e);

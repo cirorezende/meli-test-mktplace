@@ -1,6 +1,6 @@
 # Multi-stage Dockerfile for Orders Processing System
 # Stage 1: Build stage
-FROM maven:3.9.5-amazoncorretto-21-al2023 AS builder
+FROM maven:3.9.6 AS builder
 
 LABEL maintainer="Orders Processing System"
 LABEL stage="builder"
@@ -8,23 +8,23 @@ LABEL stage="builder"
 # Set working directory
 WORKDIR /app
 
-# Copy Maven files first for dependency caching
+# Copy Maven descriptor
 COPY pom.xml ./
 
-# Download dependencies (cached layer if pom.xml doesn't change)
-RUN mvn dependency:go-offline -B
+# Pre-fetch dependencies for caching
+RUN mvn -q dependency:go-offline
 
-# Copy source code
-COPY src ./src
+# Copy sources
+COPY src src
 
-# Build application with tests
-RUN mvn clean package -B -DskipTests=true
+# Build application jar (skip tests for image build speed)
+RUN mvn -q clean package -DskipTests
 
 # Verify JAR was created
 RUN ls -la target/ && test -f target/*.jar
 
 # Stage 2: Runtime stage
-FROM amazoncorretto:21.0.4-alpine3.20
+FROM eclipse-temurin:21-jre
 
 LABEL maintainer="Orders Processing System"
 LABEL stage="runtime"

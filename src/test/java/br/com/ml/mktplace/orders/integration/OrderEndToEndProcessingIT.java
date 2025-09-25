@@ -2,8 +2,8 @@ package br.com.ml.mktplace.orders.integration;
 
 import br.com.ml.mktplace.orders.adapter.inbound.rest.dto.OrderItemDto;
 import br.com.ml.mktplace.orders.adapter.inbound.rest.dto.OrderRequest;
+import br.com.ml.mktplace.orders.adapter.inbound.rest.dto.AddressDto;
 import br.com.ml.mktplace.orders.adapter.inbound.rest.dto.OrderResponse;
-import br.com.ml.mktplace.orders.integration.support.SharedWireMock;
 import org.assertj.core.api.Condition;
 import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,7 +16,6 @@ import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 
-import static com.github.tomakehurst.wiremock.client.WireMock.*;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
@@ -30,23 +29,7 @@ public class OrderEndToEndProcessingIT extends BaseIntegrationTest {
     @Autowired
     private TestRestTemplate restTemplate;
 
-    @BeforeAll
-    static void startWireMock() { SharedWireMock.startIfNeeded(); }
-
-    @AfterAll
-    static void stopWireMock() { }
-
-    @BeforeEach
-    void setupStubs() {
-        String itemId = "ASYNC-PROC-1";
-    stubFor(get(urlPathEqualTo("/distribuitioncenters"))
-        .withQueryParam("itemId", equalTo(itemId))
-        .willReturn(aResponse()
-            .withStatus(200)
-            .withHeader("Content-Type", "application/json")
-            .withBody("[\"SP-001\"]")
-        ));
-    }
+    // WireMock removed: in-process mock returns random subset for any item id
 
     @Test
     @DisplayName("Deve processar pedido assincronamente via evento ORDER_CREATED")
@@ -56,7 +39,14 @@ public class OrderEndToEndProcessingIT extends BaseIntegrationTest {
         OrderRequest request = new OrderRequest();
         request.setCustomerId("customer-async-proc");
         request.setItems(List.of(new OrderItemDto(itemId, 1)));
-    // deliveryAddress removed from request; will be resolved later during async processing
+        AddressDto addr = new AddressDto();
+        addr.setStreet("Rua Assincrona");
+        addr.setNumber("77");
+        addr.setCity("São Paulo");
+        addr.setState("SP");
+        addr.setCountry("BR");
+        addr.setZipCode("04000-000");
+        request.setDeliveryAddress(addr);
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);

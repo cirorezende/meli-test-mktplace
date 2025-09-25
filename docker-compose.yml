@@ -2,6 +2,56 @@
 
 services:
   # Orders Processing Application
+  orders-app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: orders-app
+    ports:
+      - "8080:8080"
+    environment:
+      # Spring Configuration
+      - SPRING_PROFILES_ACTIVE=docker
+      
+      # Database Configuration
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_NAME=orders_db
+      - DB_USERNAME=orders_user
+      - DB_PASSWORD=orders_pass
+      
+      # Redis Configuration
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - REDIS_PASSWORD=redis_pass
+      
+      # Kafka Configuration
+      - KAFKA_BOOTSTRAP_SERVERS=kafka:29092
+      
+      # External API (Mock)
+  # (Removed) CD_API_URL no longer needed; in-process mock replaces external service
+      
+      # JVM Options
+      - JAVA_OPTS=-server -Xms256m -Xmx512m -XX:+UseG1GC
+      
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      kafka:
+        condition: service_started
+    networks:
+      - orders-network
+    volumes:
+      - ./logs:/app/logs
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
 
   # PostgreSQL Database with PostGIS
   postgres:
@@ -103,28 +153,6 @@ services:
       - orders-network
     restart: unless-stopped
 
-  # Mock Distribution Centers API
-  distribution-centers-api:
-    image: wiremock/wiremock:3.2.0
-    container_name: distribution-centers-api
-    ports:
-      - "3000:8080"
-    volumes:
-      - ./docker/wiremock/mappings:/home/wiremock/mappings
-      - ./docker/wiremock/__files:/home/wiremock/__files
-      # Monta o jar da extensão (gerado após 'mvn -pl wiremock-extensions package')
-      - ./wiremock-extensions/target/wiremock-extensions-0.0.1-SNAPSHOT.jar:/var/wiremock/extensions/wiremock-extensions.jar:ro
-    command:
-      - "--extensions"
-      - "br.com.ml.mktplace.wiremock.RandomDistributionCentersTransformer"
-    networks:
-      - orders-network
-    restart: unless-stopped
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8080/__admin/health"]
-      interval: 30s
-      timeout: 5s
-      retries: 3
 
   # Redis Insight (for development)
   redis-insight:

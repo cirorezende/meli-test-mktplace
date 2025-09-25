@@ -68,7 +68,6 @@ public abstract class BaseIntegrationTest {
         // Kafka
         registry.add("spring.kafka.bootstrap-servers", KAFKA::getBootstrapServers);
 
-        // External API base URL (WireMock placeholder - will be overridden per test class when server started)
-        registry.add("app.distribution-center.base-url", () -> "http://localhost:9999");
+    // Distribution center external API removed; no dynamic property needed.
     }
 }

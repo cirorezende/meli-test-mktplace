@@ -1,6 +1,7 @@
 package br.com.ml.mktplace.orders.integration;
 
 import br.com.ml.mktplace.orders.adapter.inbound.rest.dto.OrderRequest;
+import br.com.ml.mktplace.orders.adapter.inbound.rest.dto.AddressDto;
 import br.com.ml.mktplace.orders.adapter.inbound.rest.dto.OrderItemDto;
 import br.com.ml.mktplace.orders.adapter.inbound.rest.dto.OrderResponse;
 import org.junit.jupiter.api.*;
@@ -8,9 +9,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.*;
-import com.github.tomakehurst.wiremock.client.WireMock;
-import br.com.ml.mktplace.orders.integration.support.SharedWireMock;
-import org.junit.jupiter.api.BeforeEach;
 
 import java.util.*;
 
@@ -24,8 +22,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 public class OrderEventPublishingIT extends BaseIntegrationTest {
 
-    @BeforeEach
-    void ensureWireMock() { SharedWireMock.startIfNeeded(); }
 
     @Autowired
     private TestRestTemplate restTemplate;
@@ -34,23 +30,21 @@ public class OrderEventPublishingIT extends BaseIntegrationTest {
     void fluxoPublicaEventosSemErro() {
         // Arrange
         OrderRequest request = new OrderRequest();
-    request.setCustomerId("customer-events");
-    request.setItems(List.of(new OrderItemDto("EVT123", 1)));
-    // deliveryAddress removed from request; will be resolved later during processing
+        request.setCustomerId("customer-events");
+        request.setItems(List.of(new OrderItemDto("EVT123", 1)));
+        AddressDto addr = new AddressDto();
+        addr.setStreet("Rua Eventos");
+        addr.setNumber("10");
+        addr.setCity("São Paulo");
+        addr.setState("SP");
+        addr.setCountry("BR");
+        addr.setZipCode("02000-000");
+        request.setDeliveryAddress(addr);
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
 
-        // Stub WireMock para item EVT123
-        WireMock.stubFor(
-            WireMock.get(WireMock.urlPathEqualTo("/distribuitioncenters"))
-                .withQueryParam("itemId", WireMock.equalTo("EVT123"))
-                .willReturn(WireMock.aResponse()
-                    .withStatus(200)
-                    .withHeader("Content-Type", "application/json")
-                    .withBody("[\"SP-001\"]")
-                )
-        );
+        // WireMock removed: internal mock provides CD list automatically
 
         // Act
     ResponseEntity<OrderResponse> createResponse = restTemplate.postForEntity("/v1/orders", new HttpEntity<>(request, headers), OrderResponse.class);

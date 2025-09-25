@@ -58,7 +58,7 @@ Este plano de implementação detalha as tarefas necessárias para desenvolver o
 - **Resiliência**: Retry, circuit breaker e fallbacks (planejado)
 - **Versionamento**: APIs versionadas para evolução
 
-> Nota (24/09/2025): Base URL da API de Centros de Distribuição para ambiente local ajustada para `http://localhost:3000` (WireMock) sem prefixo `/api/v1`; o endpoint único ativo é `GET /distribuitioncenters?itemId={id}` retornando estritamente um array de strings (IDs).
+> Nota (24/09/2025): Dependência de WireMock removida. Centros de Distribuição agora são gerados internamente (subconjunto aleatório 1..5 de `[SP-001,RJ-001,MG-001,RS-001,PR-001]`) eliminando chamadas HTTP externas e propriedades `app.distribution-center.*`.
 
 > Nota (24/09/2025): Adicionado `spring.data.redis.password` (default `redis_pass`) para alinhar com `requirepass redis_pass` do container Redis. Sem isso ocorria `RedisCommandExecutionException: NOAUTH HELLO must be called...`.
 
@@ -68,11 +68,11 @@ Este plano de implementação detalha as tarefas necessárias para desenvolver o
 - [x] Algoritmo seleciona CD mais próximo geograficamente  
 - [x] **Core de negócio implementado** *(implementações cases de uso prontas)*
 - [x] **Database configurado** *(PostgreSQL + PostGIS + Flyway)*
-- [x] Cache otimiza chamadas à API externa *(interfaces definidas)*
+- [x] Cache otimiza reutilização de dados internos derivados (API externa removida)
 - [x] **Testes unitários com 100% passando (251 testes)**
 - [x] **APIs REST funcionais para processamento e consulta** *(Controllers, DTOs, validação, error handling)*
 - [x] **Configuração completa por ambiente** *(ApplicationConfig, DatabaseConfig, CacheConfig, HttpClientConfig, KafkaConfig)*
-- [x] **Sistema conteinerizado e funcional** *(Docker + docker-compose com 8 serviços)*
+- [x] **Sistema conteinerizado e funcional** *(Docker + docker-compose com 7 serviços; mock externo removido)*
 - 🚧 Observabilidade quase completa *(métricas HTTP/Kafka + correlação concluídas; dashboards pendentes)*
 - [x] Testes de integração concluídos *(fluxo E2E assíncrono validado)*
 
@@ -137,17 +137,17 @@ Este plano de implementação detalha as tarefas necessárias para desenvolver o
   - Estratégia de cache atualizada: chave `item-dc-availability:v2:{itemId}` armazenando `String[]` (códigos de CDs) com TTL curto (5 min); enriquecimento local por códigos.
   - Garantia de chamada única ao serviço externo por item (cache hit no segundo pedido com o mesmo item).
   - Publicação/consumo de eventos Kafka (ORDER_CREATED/ORDER_PROCESSED) validados.
-  - Correção do path WireMock para `GET /distribuitioncenters?itemId=...` com resposta estritamente em array de strings (IDs).
+  - Remoção do cliente HTTP de Distribution Centers e do WireMock; serviço único interno implementado.
   - Guardas de idempotência no processamento assíncrono.
   
 - Observabilidade avançada: métricas de pedidos, cache e seleção de CD implementadas; cliente HTTP externo instrumentado (latência/status) e contadores Kafka adicionados; correlação propagada em HTTP e eventos.  
-- Próximo incremento: instrumentar cliente HTTP externo (latência, status) + cenários de falha no WireMock.
+  - (Removido) Incrementos planejados para cliente HTTP externo/WireMock descartados após internalização do mock.
   
 Atualização (23/09/2025):
 
 - Enforçado novo contrato externo: consulta apenas por item (single-item) e resposta ESTRITAMENTE como array de IDs. Removidos endpoints de múltiplos itens e "todos os CDs".
 - Portas e adaptadores atualizados (HTTP e fallback dev); enriquecimento dos dados a partir do banco local usando os códigos retornados.
-- Stubs/mapeamentos WireMock e docker mapping atualizados para o novo endpoint `distribuitioncenters`.
+- Stubs/mapeamentos WireMock e docker mapping removidos; endpoint externo descontinuado.
 - Cache per-item aplicado no processamento de itens do pedido (manutenção da ordem de proximidade via PostGIS na aplicação).
 
 ## Próximos Passos

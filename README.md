@@ -22,8 +22,12 @@ To avoid duplicate side-effects from retries or duplicate events, the processing
 
 ## Running Locally
 
-Use Docker Compose to bring up dependencies (Postgres, Redis, Kafka, WireMock). Then run the app with Maven or your IDE.
+Use Docker Compose to bring up dependencies (Postgres, Redis, Kafka). Distribution Centers are now mocked in‑process (no external WireMock container required). Then run the app with Maven or your IDE.
+
+### Project Structure
+
+The project was flattened into a single Maven module (`orders`) for simplicity. Legacy `service/` module artifacts were removed; all source now lives under the standard `src/main` and `src/test` roots.
 
 ## Testing
 
-Integration tests use Testcontainers (Kafka/Postgres/Redis) and WireMock. The suite expects `202` on order creation and validates end-to-end async processing.
+Integration tests use Testcontainers (Kafka/Postgres/Redis). The Distribution Center data is generated deterministically/randomly by an in‑process service, removing the need for WireMock. The suite expects `202` on order creation and validates end-to-end async processing.

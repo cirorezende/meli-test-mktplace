@@ -2,6 +2,7 @@ package br.com.ml.mktplace.orders.integration;
 
 import br.com.ml.mktplace.orders.adapter.inbound.rest.dto.OrderItemDto;
 import br.com.ml.mktplace.orders.adapter.inbound.rest.dto.OrderRequest;
+import br.com.ml.mktplace.orders.adapter.inbound.rest.dto.AddressDto;
 import br.com.ml.mktplace.orders.adapter.inbound.rest.dto.OrderResponse;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
@@ -17,7 +18,6 @@ import org.springframework.http.*;
 import java.time.Duration;
 import java.util.*;
 
-import static com.github.tomakehurst.wiremock.client.WireMock.*;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
@@ -34,19 +34,19 @@ public class OrderEventConsumptionIT extends BaseIntegrationTest {
     @DisplayName("Deve publicar evento de pedido e consumidor lê do tópico")
     void shouldPublishAndConsumeOrderEvent() {
         // Arrange
-        String itemId = "EVT-CONSUME-1";
-    stubFor(get(urlPathEqualTo("/distribuitioncenters"))
-                .withQueryParam("itemId", equalTo(itemId))
-                .willReturn(aResponse()
-                        .withStatus(200)
-                        .withHeader("Content-Type", "application/json")
-            .withBody("[\"SP-001\"]")
-                ));
+        String itemId = "EVT-CONSUME-1"; // In-process distribution center mock provides randomized subset; no HTTP stubbing required
 
         OrderRequest request = new OrderRequest();
         request.setCustomerId("customer-event-consumer");
         request.setItems(List.of(new OrderItemDto(itemId, 1)));
-    // deliveryAddress removed from request; will be resolved later during processing
+        AddressDto addr = new AddressDto();
+        addr.setStreet("Rua Consumo");
+        addr.setNumber("55");
+        addr.setCity("São Paulo");
+        addr.setState("SP");
+        addr.setCountry("BR");
+        addr.setZipCode("03000-000");
+        request.setDeliveryAddress(addr);
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);

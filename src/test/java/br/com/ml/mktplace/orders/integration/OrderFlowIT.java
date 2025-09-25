@@ -1,9 +1,9 @@
 package br.com.ml.mktplace.orders.integration;
 
 import br.com.ml.mktplace.orders.adapter.inbound.rest.dto.OrderRequest;
+import br.com.ml.mktplace.orders.adapter.inbound.rest.dto.AddressDto;
 import br.com.ml.mktplace.orders.adapter.inbound.rest.dto.OrderItemDto;
 import br.com.ml.mktplace.orders.adapter.inbound.rest.dto.OrderResponse;
-import br.com.ml.mktplace.orders.integration.support.SharedWireMock;
 import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.web.client.TestRestTemplate;
@@ -13,7 +13,6 @@ import org.springframework.http.*;
 import java.util.List;
 import java.util.UUID;
 
-import static com.github.tomakehurst.wiremock.client.WireMock.*;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
@@ -26,23 +25,7 @@ public class OrderFlowIT extends BaseIntegrationTest {
     @Autowired
     private TestRestTemplate restTemplate;
 
-    @BeforeAll
-    static void startWireMock() { SharedWireMock.startIfNeeded(); }
-
-    @AfterAll
-    static void stopWireMock() { }
-
-    @BeforeEach
-    void setupStubs() {
-        // Sucesso para item ABC123
-    stubFor(get(urlPathEqualTo("/distribuitioncenters"))
-        .withQueryParam("itemId", equalTo("ABC123"))
-        .willReturn(aResponse()
-            .withStatus(200)
-            .withHeader("Content-Type", "application/json")
-            .withBody("[\"SP-001\"]")
-        ));
-    }
+    // WireMock removed: in-process distribution center mock returns random subset automatically
 
     @Test
     @org.junit.jupiter.api.Order(1)
@@ -52,7 +35,15 @@ public class OrderFlowIT extends BaseIntegrationTest {
     OrderRequest request = new OrderRequest();
     request.setCustomerId("customer-1");
     request.setItems(List.of(new OrderItemDto("ABC123", 2)));
-            // deliveryAddress removed from request; will be resolved later during processing
+    // Provide minimal valid delivery address (was previously removed causing 400 BAD_REQUEST)
+    AddressDto addr = new AddressDto();
+    addr.setStreet("Rua Teste");
+    addr.setNumber("123");
+    addr.setCity("São Paulo");
+    addr.setState("SP");
+    addr.setCountry("BR");
+    addr.setZipCode("01000-000");
+    request.setDeliveryAddress(addr);
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
