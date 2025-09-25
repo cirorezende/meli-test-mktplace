@@ -52,7 +52,7 @@ Escalabilidade > Disponibilidade > Performance > Manutenibilidade
 - Garantir autenticação robusta nas integrações com a API de CDs.
 - Implementar rate limiting para evitar sobrecarga e uso indevido da API externa.
 
-### Crescimento do volume de dados e performance do banco PostgreSQL/PostGIS
+### Cenário futuro - crescimento do volume de dados e performance do banco PostgreSQL/PostGIS
 
 - Normalizar dados de pedidos e CDs, evitando redundância.
 - Utilizar índices geoespaciais e de busca para acelerar consultas.
